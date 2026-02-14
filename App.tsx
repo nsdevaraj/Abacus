@@ -2,9 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { SYLLABUS, getProblemForIndex } from './utils/syllabus';
 import { LevelConfig, MathProblem, UserProgress, Operation } from './types';
 import Abacus from './components/Abacus';
-import { GoogleGenAI, Modality } from "@google/genai";
 import {
-  ChevronRight,
   ChevronLeft,
   RefreshCw,
   Calculator,
@@ -24,39 +22,10 @@ import {
   Ghost,
   Cloud,
   Rocket,
+  Shuffle,
   Volume2,
-  Shuffle
+  Trash2
 } from 'lucide-react';
-
-// --- Audio Utility Functions (as per @google/genai guidelines) ---
-function decode(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
-async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
-): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-    }
-  }
-  return buffer;
-}
 
 const App = () => {
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
@@ -67,9 +36,17 @@ const App = () => {
   const [mode, setMode] = useState<'learn' | 'practice' | 'map'>('map');
   const [abacusValue, setAbacusValue] = useState<number>(0);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Default progress structure
+  const getDefaultProgress = () => SYLLABUS.map(l => ({ 
+    levelId: l.id, 
+    completedIndices: [], 
+    coins: 0, 
+    streak: 0 
+  }));
 
   // Gamification state
   const [progress, setProgress] = useState<UserProgress[]>(() => {
@@ -84,7 +61,7 @@ const App = () => {
       }
       return parsed;
     }
-    return SYLLABUS.map(l => ({ levelId: l.id, completedIndices: [], coins: 0, streak: 0 }));
+    return getDefaultProgress();
   });
 
   const [globalCoins, setGlobalCoins] = useState<number>(() => parseInt(localStorage.getItem('abacus_coins') || '0'));
@@ -99,60 +76,55 @@ const App = () => {
     localStorage.setItem('abacus_streak', globalStreak.toString());
   }, [progress, globalCoins, globalStreak]);
 
-  // --- TTS Implementation ---
-  const speakText = async (text: string, voiceName: string = 'Kore') => {
-    try {
-      setIsSpeaking(true);
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: [{ parts: [{ text }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName },
-            },
-          },
-        },
-      });
-
-      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-      if (!base64Audio) throw new Error("No audio data received");
-
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      }
-      const ctx = audioContextRef.current;
-      
-      const audioBuffer = await decodeAudioData(
-        decode(base64Audio),
-        ctx,
-        24000,
-        1
-      );
-
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-      source.onended = () => setIsSpeaking(false);
-      source.start();
-    } catch (error) {
-      console.error("TTS Error:", error);
-      setIsSpeaking(false);
+  // --- Offline Audio Synthesis ---
+  const initAudio = () => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
   };
 
-  const explainQuestion = async (prob: MathProblem) => {
-    let text = "";
-    if (prob.operation === Operation.ADD) {
-      text = `What is ${prob.expression.split('+')[0]} plus ${prob.expression.split('+')[1]}?`;
-    } else if (prob.operation === Operation.SUB) {
-      text = `What is ${prob.expression.split('-')[0]} minus ${prob.expression.split('-')[1]}?`;
+  const playSound = (type: 'correct' | 'incorrect') => {
+    if (!isAudioEnabled) return;
+    initAudio();
+    const ctx = audioCtxRef.current!;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'correct') {
+      // Pleasant "Ding"
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.1); // C6
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
     } else {
-      text = `What is the result of ${prob.expression}?`;
+      // Low "Buzz"
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
     }
-    await speakText(text);
+  };
+
+  const speak = (text: string) => {
+    if (!isAudioEnabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.1;
+    utterance.pitch = 1.2; // Kid-friendly high pitch
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const explainQuestion = (prob: MathProblem) => {
+    speak(`What is ${prob.expression.replace('×', 'times').replace('÷', 'divided by')}?`);
   };
 
   const startExercise = (index: number) => {
@@ -163,7 +135,7 @@ const App = () => {
     setAbacusValue(0);
     setMode('practice');
     setShowCelebration(false);
-    explainQuestion(prob);
+    setTimeout(() => explainQuestion(prob), 500);
   };
 
   const handleShuffle = () => {
@@ -174,7 +146,22 @@ const App = () => {
       setProblem(prob);
       explainQuestion(prob);
     }
-    // Also visual feedback for map mode if needed, but since we generate on the fly it's fine
+  };
+
+  const handleResetAll = () => {
+    if (window.confirm("Are you sure you want to delete all your hard-earned coins and progress? This cannot be undone!")) {
+      localStorage.removeItem('abacus_progress');
+      localStorage.removeItem('abacus_coins');
+      localStorage.removeItem('abacus_streak');
+      
+      setProgress(getDefaultProgress());
+      setGlobalCoins(0);
+      setGlobalStreak(0);
+      setMasterSeed(0);
+      setMode('map');
+      setCurrentLevelId(1);
+      speak("Everything has been reset. Let's start a fresh adventure!");
+    }
   };
 
   const checkAnswer = () => {
@@ -185,7 +172,8 @@ const App = () => {
     if (isCorrect) {
       setFeedback('correct');
       setShowCelebration(true);
-      speakText("Yay! Claps claps! That is correct! Great job, superstar!", "Puck");
+      playSound('correct');
+      speak("Great job! That is correct!");
       
       if (!levelProgress.completedIndices.includes(problem.index)) {
         const bonus = globalStreak > 5 ? 20 : 10;
@@ -201,7 +189,8 @@ const App = () => {
     } else {
       setFeedback('incorrect');
       setGlobalStreak(0);
-      speakText("Oh no, sorry! That's not quite right. Try again, you can do it!", "Kore");
+      playSound('incorrect');
+      speak("Not quite. Try again!");
     }
   };
 
@@ -247,13 +236,13 @@ const App = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-10">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-6">
           <div className="flex items-center justify-between px-4 mb-2">
             <p className="text-[11px] font-black text-sky-300 uppercase tracking-widest">Adventure Map</p>
           </div>
           
-          {/* Regeneration Button */}
-          <div className="px-2 mb-4">
+          <div className="px-2 space-y-2 mb-4">
+            {/* Regeneration Button */}
             <button 
               onClick={handleShuffle}
               className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-2xl border-2 border-indigo-100 transition-all font-black text-xs uppercase tracking-widest shadow-sm group"
@@ -297,6 +286,17 @@ const App = () => {
             );
           })}
         </div>
+
+        {/* Danger Zone: Reset Button */}
+        <div className="p-4 border-t border-sky-50 bg-white/50 backdrop-blur-sm">
+          <button 
+            onClick={handleResetAll}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl border-2 border-red-100 transition-all font-black text-[10px] uppercase tracking-widest shadow-sm group"
+          >
+            <Trash2 className="w-4 h-4 group-hover:animate-bounce" />
+            Reset All Data
+          </button>
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -318,23 +318,31 @@ const App = () => {
             </div>
           </div>
           
-          <div className="flex bg-sky-100/50 p-1.5 rounded-2xl border-2 border-sky-100 shadow-inner">
-            <button
-              onClick={() => setMode('map')}
-              className={`px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm font-black ${
-                mode === 'map' ? 'bg-white text-sky-600 shadow-md transform -translate-y-0.5' : 'text-sky-400 hover:text-sky-600'
-              }`}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+              className={`p-3 rounded-2xl border-2 transition-all shadow-sm ${isAudioEnabled ? 'bg-sky-100 border-sky-200 text-sky-600' : 'bg-gray-100 border-gray-200 text-gray-400'}`}
             >
-              <Gamepad2 className="w-5 h-5" /> Play
+              <Volume2 className="w-6 h-6" />
             </button>
-            <button
-              onClick={() => setMode('learn')}
-              className={`px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm font-black ${
-                mode === 'learn' ? 'bg-white text-sky-600 shadow-md transform -translate-y-0.5' : 'text-sky-400 hover:text-sky-600'
-              }`}
-            >
-              <BookOpen className="w-5 h-5" /> Tips
-            </button>
+            <div className="flex bg-sky-100/50 p-1.5 rounded-2xl border-2 border-sky-100 shadow-inner">
+              <button
+                onClick={() => setMode('map')}
+                className={`px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm font-black ${
+                  mode === 'map' ? 'bg-white text-sky-600 shadow-md transform -translate-y-0.5' : 'text-sky-400 hover:text-sky-600'
+                }`}
+              >
+                <Gamepad2 className="w-5 h-5" /> Play
+              </button>
+              <button
+                onClick={() => setMode('learn')}
+                className={`px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm font-black ${
+                  mode === 'learn' ? 'bg-white text-sky-600 shadow-md transform -translate-y-0.5' : 'text-sky-400 hover:text-sky-600'
+                }`}
+              >
+                <BookOpen className="w-5 h-5" /> Tips
+              </button>
+            </div>
           </div>
         </header>
 
@@ -451,12 +459,12 @@ const App = () => {
                  <h2 className="text-lg font-black text-sky-900 px-4 py-1 bg-white rounded-full border border-sky-100 shadow-sm">{currentLevel.title}</h2>
                </div>
                <div className="w-32 flex items-center justify-end">
-                  <button 
-                    onClick={() => explainQuestion(problem)}
-                    className={`p-3 rounded-2xl bg-white border-2 border-sky-100 shadow-sm text-sky-500 hover:text-pink-500 transition-all ${isSpeaking ? 'animate-pulse scale-110 border-pink-200' : ''}`}
-                  >
-                    <Volume2 className="w-6 h-6" />
-                  </button>
+                 <button 
+                   onClick={() => explainQuestion(problem)}
+                   className="p-3 rounded-2xl bg-white border-2 border-sky-100 shadow-sm text-sky-500 hover:text-pink-500 transition-all hover:scale-110"
+                 >
+                   <Volume2 className="w-6 h-6" />
+                 </button>
                </div>
             </header>
 
