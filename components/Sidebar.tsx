@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`
         fixed 2xl:relative inset-y-0 left-0 z-40
-        w-[85vw] 2xl:w-80 
+        w-[45vw] 2xl:w-80 
         bg-white/95 2xl:bg-white/90 backdrop-blur-md 
         border-r border-sky-100 flex flex-col shadow-2xl 2xl:shadow-xl 
         h-screen shrink-0 transition-transform duration-300 ease-out
