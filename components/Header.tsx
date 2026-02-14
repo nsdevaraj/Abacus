@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* Mobile Menu Toggle */}
         <button 
           onClick={() => setMobileMenuOpen(true)}
-          className="p-2 -ml-2 rounded-xl text-sky-600 hover:bg-sky-50 md:hidden active:scale-95 transition-transform"
+          className="p-2 -ml-2 rounded-xl text-sky-600 hover:bg-sky-50 lg:hidden active:scale-95 transition-transform"
         >
           <Menu className="w-7 h-7" />
         </button>

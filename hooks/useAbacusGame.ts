@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { SYLLABUS, getProblemForIndex } from '../utils/syllabus';
-import { MathProblem, UserProgress } from '../types';
+import { MathProblem, UserProgress, DailyLog } from '../types';
 
 export const useAbacusGame = () => {
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
@@ -10,7 +10,7 @@ export const useAbacusGame = () => {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   
   // Navigation & Game Modes
-  const [mode, setMode] = useState<'learn' | 'practice' | 'map'>('map');
+  const [mode, setMode] = useState<'learn' | 'practice' | 'map' | 'calendar'>('map');
   const [practiceType, setPracticeType] = useState<'visual' | 'mental'>('visual');
   
   const [abacusValue, setAbacusValue] = useState<number>(0);
@@ -44,6 +44,12 @@ export const useAbacusGame = () => {
     return getDefaultProgress();
   });
 
+  // Daily Logs state
+  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(() => {
+    const saved = localStorage.getItem('abacus_daily_logs');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [globalCoins, setGlobalCoins] = useState<number>(() => parseInt(localStorage.getItem('abacus_coins') || '0'));
   const [globalStreak, setGlobalStreak] = useState<number>(() => parseInt(localStorage.getItem('abacus_streak') || '0'));
 
@@ -54,7 +60,8 @@ export const useAbacusGame = () => {
     localStorage.setItem('abacus_progress', JSON.stringify(progress));
     localStorage.setItem('abacus_coins', globalCoins.toString());
     localStorage.setItem('abacus_streak', globalStreak.toString());
-  }, [progress, globalCoins, globalStreak]);
+    localStorage.setItem('abacus_daily_logs', JSON.stringify(dailyLogs));
+  }, [progress, globalCoins, globalStreak, dailyLogs]);
 
   // --- Offline Audio Synthesis ---
   const initAudio = () => {
@@ -140,8 +147,10 @@ export const useAbacusGame = () => {
       localStorage.removeItem('abacus_progress');
       localStorage.removeItem('abacus_coins');
       localStorage.removeItem('abacus_streak');
+      localStorage.removeItem('abacus_daily_logs');
       
       setProgress(getDefaultProgress());
+      setDailyLogs([]);
       setGlobalCoins(0);
       setGlobalStreak(0);
       setMasterSeed(0);
@@ -164,6 +173,23 @@ export const useAbacusGame = () => {
       playSound('correct');
       speak("Correct!");
       
+      // Update Daily Log
+      const today = new Date().toISOString().split('T')[0];
+      setDailyLogs(prevLogs => {
+        const existingIndex = prevLogs.findIndex(l => l.date === today);
+        if (existingIndex >= 0) {
+          const newLogs = [...prevLogs];
+          newLogs[existingIndex] = {
+            ...newLogs[existingIndex],
+            solved: newLogs[existingIndex].solved + 1,
+            lastLevelId: currentLevelId
+          };
+          return newLogs;
+        } else {
+          return [...prevLogs, { date: today, solved: 1, lastLevelId: currentLevelId }];
+        }
+      });
+
       if (!levelProgress.completedIndices.includes(problem.index)) {
         const bonus = globalStreak > 5 ? 20 : 10;
         setGlobalCoins(c => c + bonus);
@@ -208,6 +234,7 @@ export const useAbacusGame = () => {
       progress,
       globalCoins,
       globalStreak,
+      dailyLogs,
       currentLevel,
       levelProgress
     },

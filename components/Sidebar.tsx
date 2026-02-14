@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2 
+  X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
 import { SYLLABUS } from '../utils/syllabus';
 import { UserProgress } from '../types';
@@ -14,7 +14,7 @@ interface SidebarProps {
   progress: UserProgress[];
   currentLevelId: number;
   setCurrentLevelId: (id: number) => void;
-  setMode: (mode: 'map' | 'learn' | 'practice') => void;
+  setMode: (mode: 'map' | 'learn' | 'practice' | 'calendar') => void;
   handleResetAll: () => void;
 }
 
@@ -32,18 +32,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <aside className={`
-        fixed md:relative inset-y-0 left-0 z-40
-        w-[85vw] md:w-80 
-        bg-white/95 md:bg-white/90 backdrop-blur-md 
-        border-r border-sky-100 flex flex-col shadow-2xl md:shadow-xl 
+        fixed lg:relative inset-y-0 left-0 z-40
+        w-[85vw] lg:w-80 
+        bg-white/95 lg:bg-white/90 backdrop-blur-md 
+        border-r border-sky-100 flex flex-col shadow-2xl lg:shadow-xl 
         h-screen shrink-0 transition-transform duration-300 ease-out
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
       <div className="p-6 md:p-8 border-b border-sky-50 flex flex-col items-center gap-4 md:gap-6 relative">
         {/* Mobile Close Button */}
         <button 
           onClick={() => setMobileMenuOpen(false)}
-          className="absolute top-4 right-4 p-2 bg-sky-50 rounded-full text-sky-400 md:hidden hover:bg-sky-100"
+          className="absolute top-4 right-4 p-2 bg-sky-50 rounded-full text-sky-400 lg:hidden hover:bg-sky-100"
         >
           <X className="w-5 h-5" />
         </button>
@@ -73,6 +73,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         <div className="px-2 space-y-2 mb-4">
+          <button 
+            onClick={() => {
+              setMode('calendar');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-2xl border-2 border-emerald-100 transition-all font-black text-xs uppercase tracking-widest shadow-sm group mb-2"
+          >
+            <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            Daily Log
+          </button>
           <button 
             onClick={handleShuffle}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-2xl border-2 border-indigo-100 transition-all font-black text-xs uppercase tracking-widest shadow-sm group"

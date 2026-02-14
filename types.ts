@@ -1,3 +1,4 @@
+
 export enum Operation {
   ADD = 'addition',
   SUB = 'subtraction',
@@ -42,4 +43,10 @@ export interface UserProgress {
   completedIndices: number[];
   coins: number;
   streak: number;
+}
+
+export interface DailyLog {
+  date: string; // YYYY-MM-DD
+  solved: number;
+  lastLevelId: number;
 }

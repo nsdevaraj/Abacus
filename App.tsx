@@ -6,12 +6,13 @@ import Header from './components/Header';
 import MapMode from './components/MapMode';
 import LearnMode from './components/LearnMode';
 import PracticeMode from './components/PracticeMode';
+import CalendarMode from './components/CalendarMode';
 
 const App = () => {
   const { state, actions } = useAbacusGame();
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row text-gray-800 font-sans bg-sky-50 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col lg:flex-row text-gray-800 font-sans bg-sky-50 overflow-hidden relative">
       
       {/* Playful Floating Elements Background */}
       <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
@@ -24,7 +25,7 @@ const App = () => {
       {/* Mobile Sidebar Overlay */}
       {state.mobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
           onClick={() => actions.setMobileMenuOpen(false)}
         />
       )}
@@ -71,6 +72,10 @@ const App = () => {
               abacusValue={state.abacusValue}
               setAbacusValue={actions.setAbacusValue}
             />
+          )}
+
+          {state.mode === 'calendar' && (
+            <CalendarMode logs={state.dailyLogs} />
           )}
         </div>
 
