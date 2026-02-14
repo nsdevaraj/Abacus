@@ -91,7 +91,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                   </div>
 
                   {/* Visual Mode: Abacus Interaction */}
-                  <div className="bg-sky-100/50 p-2 md:p-6 xl:p-10 rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-white shadow-xl md:shadow-2xl max-w-4xl mx-auto transform transition-transform hover:scale-[1.01] w-full">
+                  <div className="bg-sky-100/50 p-2 md:p-6 xl:p-10 rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-white shadow-xl md:shadow-2xl max-w-5xl mx-auto transform transition-transform hover:scale-[1.01] w-full">
                       <Abacus interactive={true} onChange={setAbacusValue} columns={11} />
                        
                   </div>
