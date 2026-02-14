@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { SYLLABUS, getProblemForIndex } from './utils/syllabus';
-import { LevelConfig, MathProblem, UserProgress } from './types';
+import { LevelConfig, MathProblem, UserProgress, Operation } from './types';
 import Abacus from './components/Abacus';
+import { GoogleGenAI, Modality } from "@google/genai";
 import {
   ChevronRight,
   ChevronLeft,
@@ -22,8 +23,39 @@ import {
   PartyPopper,
   Ghost,
   Cloud,
-  Rocket
+  Rocket,
+  Volume2
 } from 'lucide-react';
+
+// --- Audio Utility Functions (as per @google/genai guidelines) ---
+function decode(base64: string) {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function decodeAudioData(
+  data: Uint8Array,
+  ctx: AudioContext,
+  sampleRate: number,
+  numChannels: number,
+): Promise<AudioBuffer> {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length / numChannels;
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    }
+  }
+  return buffer;
+}
 
 const App = () => {
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
@@ -33,6 +65,9 @@ const App = () => {
   const [mode, setMode] = useState<'learn' | 'practice' | 'map'>('map');
   const [abacusValue, setAbacusValue] = useState<number>(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   // Gamification state
   const [progress, setProgress] = useState<UserProgress[]>(() => {
@@ -62,6 +97,62 @@ const App = () => {
     localStorage.setItem('abacus_streak', globalStreak.toString());
   }, [progress, globalCoins, globalStreak]);
 
+  // --- TTS Implementation ---
+  const speakText = async (text: string, voiceName: string = 'Kore') => {
+    try {
+      setIsSpeaking(true);
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-preview-tts",
+        contents: [{ parts: [{ text }] }],
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName },
+            },
+          },
+        },
+      });
+
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (!base64Audio) throw new Error("No audio data received");
+
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+      const ctx = audioContextRef.current;
+      
+      const audioBuffer = await decodeAudioData(
+        decode(base64Audio),
+        ctx,
+        24000,
+        1
+      );
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+      source.onended = () => setIsSpeaking(false);
+      source.start();
+    } catch (error) {
+      console.error("TTS Error:", error);
+      setIsSpeaking(false);
+    }
+  };
+
+  const explainQuestion = async (prob: MathProblem) => {
+    let text = "";
+    if (prob.operation === Operation.ADD) {
+      text = `What is ${prob.expression.split('+')[0]} plus ${prob.expression.split('+')[1]}?`;
+    } else if (prob.operation === Operation.SUB) {
+      text = `What is ${prob.expression.split('-')[0]} minus ${prob.expression.split('-')[1]}?`;
+    } else {
+      text = `What is the result of ${prob.expression}?`;
+    }
+    await speakText(text);
+  };
+
   const startExercise = (index: number) => {
     const prob = getProblemForIndex(currentLevel, index);
     setProblem(prob);
@@ -70,6 +161,7 @@ const App = () => {
     setAbacusValue(0);
     setMode('practice');
     setShowCelebration(false);
+    explainQuestion(prob);
   };
 
   const checkAnswer = () => {
@@ -80,6 +172,8 @@ const App = () => {
     if (isCorrect) {
       setFeedback('correct');
       setShowCelebration(true);
+      speakText("Yay! Claps claps! That is correct! Great job, superstar!", "Puck");
+      
       if (!levelProgress.completedIndices.includes(problem.index)) {
         const bonus = globalStreak > 5 ? 20 : 10;
         setGlobalCoins(c => c + bonus);
@@ -94,6 +188,7 @@ const App = () => {
     } else {
       setFeedback('incorrect');
       setGlobalStreak(0);
+      speakText("Oh no, sorry! That's not quite right. Try again, you can do it!", "Kore");
     }
   };
 
@@ -328,7 +423,14 @@ const App = () => {
                  <span className="text-[12px] uppercase font-black text-sky-300 tracking-[0.2em] mb-1">Quest {problem.index} / 100</span>
                  <h2 className="text-lg font-black text-sky-900 px-4 py-1 bg-white rounded-full border border-sky-100 shadow-sm">{currentLevel.title}</h2>
                </div>
-               <div className="w-32 hidden sm:block"></div>
+               <div className="w-32 flex items-center justify-end">
+                  <button 
+                    onClick={() => explainQuestion(problem)}
+                    className={`p-3 rounded-2xl bg-white border-2 border-sky-100 shadow-sm text-sky-500 hover:text-pink-500 transition-all ${isSpeaking ? 'animate-pulse scale-110 border-pink-200' : ''}`}
+                  >
+                    <Volume2 className="w-6 h-6" />
+                  </button>
+               </div>
             </header>
 
             <div className="flex-1 overflow-y-auto p-10 flex flex-col items-center justify-center relative">
