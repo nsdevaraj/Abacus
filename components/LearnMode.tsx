@@ -70,7 +70,7 @@ const LearnMode: React.FC<LearnModeProps> = ({
   const levelSteps = getLevelSteps(currentLevel);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 md:space-y-10 animate-in zoom-in-95 duration-500">
+    <div className="max-w-5xl mx-auto space-y-6 md:space-y-10 animate-in zoom-in-95 duration-500">
        <div className="grid md:grid-cols-2 gap-4 md:gap-8">
         <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border-4 border-sky-50 shadow-xl transition-transform hover:scale-[1.02]">
           <div className="w-12 h-12 md:w-16 md:h-16 bg-pink-100 rounded-2xl md:rounded-3xl flex items-center justify-center mb-4 md:mb-6 text-pink-600 shadow-inner">
