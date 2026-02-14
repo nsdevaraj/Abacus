@@ -1,3 +1,4 @@
+
 import { LevelConfig, Operation, MathProblem, StageConfig } from '../types';
 
 export const SYLLABUS: LevelConfig[] = [
@@ -174,9 +175,10 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
-export const getProblemForIndex = (level: LevelConfig, index: number): MathProblem => {
+// Fix: Complete the getProblemForIndex function and ensure it always returns a MathProblem object.
+export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed: number = 0): MathProblem => {
   const stage = level.stages.find(s => index >= s.range[0] && index <= s.range[1]) || level.stages[0];
-  const seed = level.id * 10000 + index; // Level-specific seed offset
+  const seed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
   const rand = seededRandom(seed);
   
   const op = stage.operations[Math.floor(rand * stage.operations.length)];
@@ -238,25 +240,25 @@ export const getProblemForIndex = (level: LevelConfig, index: number): MathProbl
     const total = Math.floor(seededRandom(seed + 3) * 10) * den + den;
     answer = (num / den) * total;
     expression = `${num}/${den} of ${total}`;
-  } 
+  }
   else if (op === Operation.PERCENT) {
-    const p = [10, 20, 25, 50][Math.floor(seededRandom(seed + 1) * 4)];
-    const val = Math.floor(seededRandom(seed + 2) * 10) * 10 + 100;
-    answer = (p / 100) * val;
-    expression = `${p}% of ${val}`;
-  } 
+    const percent = [10, 20, 25, 50, 75][Math.floor(seededRandom(seed + 1) * 5)];
+    const total = (Math.floor(seededRandom(seed + 2) * 10) + 1) * 40;
+    answer = (percent / 100) * total;
+    expression = `${percent}% of ${total}`;
+  }
   else if (op === Operation.BODMAS) {
-    const a = Math.floor(seededRandom(seed + 1) * 10) + 1;
-    const b = Math.floor(seededRandom(seed + 2) * 10) + 1;
-    const c = Math.floor(seededRandom(seed + 3) * 5) + 2;
-    answer = (a + b) * c;
-    expression = `(${a} + ${b}) × ${c}`;
+    const n1 = Math.floor(seededRandom(seed + 1) * 20) + 1;
+    const n2 = Math.floor(seededRandom(seed + 2) * 10) + 1;
+    const n3 = Math.floor(seededRandom(seed + 3) * 5) + 1;
+    expression = `(${n1} + ${n2}) × ${n3}`;
+    answer = (n1 + n2) * n3;
   }
 
   return {
-    id: `L${level.id}-I${index}`,
+    id: `${level.id}-${index}-${seed}`,
     expression,
-    answer: Number(answer.toFixed(4)),
+    answer: Number(answer.toFixed(level.decimalPlaces || 0)),
     operation: op,
     index,
     levelId: level.id

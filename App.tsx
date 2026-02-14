@@ -24,7 +24,8 @@ import {
   Ghost,
   Cloud,
   Rocket,
-  Volume2
+  Volume2,
+  Shuffle
 } from 'lucide-react';
 
 // --- Audio Utility Functions (as per @google/genai guidelines) ---
@@ -59,6 +60,7 @@ async function decodeAudioData(
 
 const App = () => {
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
+  const [masterSeed, setMasterSeed] = useState<number>(0);
   const [problem, setProblem] = useState<MathProblem | null>(null);
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
@@ -154,7 +156,7 @@ const App = () => {
   };
 
   const startExercise = (index: number) => {
-    const prob = getProblemForIndex(currentLevel, index);
+    const prob = getProblemForIndex(currentLevel, index, masterSeed);
     setProblem(prob);
     setUserAnswer('');
     setFeedback(null);
@@ -162,6 +164,17 @@ const App = () => {
     setMode('practice');
     setShowCelebration(false);
     explainQuestion(prob);
+  };
+
+  const handleShuffle = () => {
+    const newSeed = Math.floor(Math.random() * 1000000);
+    setMasterSeed(newSeed);
+    if (mode === 'practice' && problem) {
+      const prob = getProblemForIndex(currentLevel, problem.index, newSeed);
+      setProblem(prob);
+      explainQuestion(prob);
+    }
+    // Also visual feedback for map mode if needed, but since we generate on the fly it's fine
   };
 
   const checkAnswer = () => {
@@ -235,7 +248,21 @@ const App = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-10">
-          <p className="text-[11px] font-black text-sky-300 uppercase tracking-widest px-4 mb-2">Adventure Map</p>
+          <div className="flex items-center justify-between px-4 mb-2">
+            <p className="text-[11px] font-black text-sky-300 uppercase tracking-widest">Adventure Map</p>
+          </div>
+          
+          {/* Regeneration Button */}
+          <div className="px-2 mb-4">
+            <button 
+              onClick={handleShuffle}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-2xl border-2 border-indigo-100 transition-all font-black text-xs uppercase tracking-widest shadow-sm group"
+            >
+              <Shuffle className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+              Shuffle Quests
+            </button>
+          </div>
+
           {SYLLABUS.map((level) => {
             const p = progress.find(item => item.levelId === level.id)!;
             const completion = p.completedIndices.length;
