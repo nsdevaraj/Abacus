@@ -84,9 +84,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                 <>
                   {/* Visual Mode: Problem Display */}
                   <div className="text-center space-y-4 md:space-y-8 animate-in zoom-in-50 duration-500">
-                      <div className="inline-block px-4 py-1.5 md:px-8 md:py-2.5 bg-pink-100 text-pink-600 rounded-full text-xs md:text-sm font-black uppercase tracking-widest border-2 md:border-4 border-white shadow-lg rotate-2">
-                      {problem.operation} Power
-                      </div>
+                 
                       <div className="text-6xl sm:text-8xl md:text-[11rem] font-black text-sky-900 tracking-tighter drop-shadow-xl select-none leading-none">
                       {problem.expression}<span className="text-pink-500"> = </span>?
                       </div>
@@ -95,9 +93,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                   {/* Visual Mode: Abacus Interaction */}
                   <div className="bg-sky-100/50 p-2 md:p-6 xl:p-10 rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-white shadow-xl md:shadow-2xl max-w-4xl mx-auto transform transition-transform hover:scale-[1.01] w-full">
                       <Abacus interactive={true} onChange={setAbacusValue} columns={11} />
-                      <p className="text-center text-sm md:text-lg text-sky-500 mt-4 md:mt-8 font-black flex items-center justify-center gap-2 md:gap-3">
-                      <Calculator className="w-5 h-5 md:w-6 md:h-6 text-pink-500" /> Use your magic beads!
-                      </p>
+                       
                   </div>
                 </>
             ) : (
