@@ -3,7 +3,10 @@ export enum Operation {
   SUB = 'subtraction',
   MUL = 'multiplication',
   DIV = 'division',
-  SQRT = 'square_root'
+  SQRT = 'square_root',
+  FRACTION = 'fractions',
+  PERCENT = 'percentage',
+  BODMAS = 'bodmas'
 }
 
 export interface LevelConfig {
@@ -12,9 +15,17 @@ export interface LevelConfig {
   abacusDesc: string;
   mentalDesc: string;
   operations: Operation[];
-  digitRange: [number, number]; // Min/Max digits per operand
+  digitRange: [number, number];
   decimalPlaces: number;
   allowNegative: boolean;
+  stages: StageConfig[];
+}
+
+export interface StageConfig {
+  name: string;
+  operations: Operation[];
+  range: [number, number]; // index range within the 100 exercises e.g. [1, 25]
+  description: string;
 }
 
 export interface MathProblem {
@@ -22,8 +33,13 @@ export interface MathProblem {
   expression: string;
   answer: number;
   operation: Operation;
+  index: number;
+  levelId: number;
 }
 
-export interface AbacusState {
-  columns: number[]; // Array of values 0-9 for each column
+export interface UserProgress {
+  levelId: number;
+  completedIndices: number[];
+  coins: number;
+  streak: number;
 }
