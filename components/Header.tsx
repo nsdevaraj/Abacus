@@ -10,8 +10,8 @@ interface HeaderProps {
   levelProgress: UserProgress;
   isAudioEnabled: boolean;
   setIsAudioEnabled: (enabled: boolean) => void;
-  mode: 'map' | 'learn' | 'practice';
-  setMode: (mode: 'map' | 'learn' | 'practice') => void;
+  mode: 'map' | 'learn' | 'practice' | 'calendar';
+  setMode: (mode: 'map' | 'learn' | 'practice' | 'calendar') => void;
   practiceType: 'visual' | 'mental';
   setPracticeType: (type: 'visual' | 'mental') => void;
 }
@@ -31,10 +31,10 @@ const Header: React.FC<HeaderProps> = ({
     <header className="bg-white/80 backdrop-blur-md border-b border-sky-100 px-4 md:px-8 py-3 md:py-5 flex items-center justify-between shrink-0 shadow-sm gap-2 md:gap-4">
       <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
         
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Menu Toggle - Visible below 1536px */}
         <button 
           onClick={() => setMobileMenuOpen(true)}
-          className="p-2 -ml-2 rounded-xl text-sky-600 hover:bg-sky-50 lg:hidden active:scale-95 transition-transform"
+          className="p-2 -ml-2 rounded-xl text-sky-600 hover:bg-sky-50 2xl:hidden active:scale-95 transition-transform"
         >
           <Menu className="w-7 h-7" />
         </button>

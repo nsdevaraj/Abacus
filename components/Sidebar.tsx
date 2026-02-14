@@ -32,18 +32,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <aside className={`
-        fixed lg:relative inset-y-0 left-0 z-40
-        w-[85vw] lg:w-80 
-        bg-white/95 lg:bg-white/90 backdrop-blur-md 
-        border-r border-sky-100 flex flex-col shadow-2xl lg:shadow-xl 
+        fixed 2xl:relative inset-y-0 left-0 z-40
+        w-[85vw] 2xl:w-80 
+        bg-white/95 2xl:bg-white/90 backdrop-blur-md 
+        border-r border-sky-100 flex flex-col shadow-2xl 2xl:shadow-xl 
         h-screen shrink-0 transition-transform duration-300 ease-out
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full 2xl:translate-x-0'}
     `}>
       <div className="p-6 md:p-8 border-b border-sky-50 flex flex-col items-center gap-4 md:gap-6 relative">
         {/* Mobile Close Button */}
         <button 
           onClick={() => setMobileMenuOpen(false)}
-          className="absolute top-4 right-4 p-2 bg-sky-50 rounded-full text-sky-400 lg:hidden hover:bg-sky-100"
+          className="absolute top-4 right-4 p-2 bg-sky-50 rounded-full text-sky-400 2xl:hidden hover:bg-sky-100"
         >
           <X className="w-5 h-5" />
         </button>

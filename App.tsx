@@ -12,7 +12,7 @@ const App = () => {
   const { state, actions } = useAbacusGame();
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row text-gray-800 font-sans bg-sky-50 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col 2xl:flex-row text-gray-800 font-sans bg-sky-50 overflow-hidden relative">
       
       {/* Playful Floating Elements Background */}
       <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
@@ -25,7 +25,7 @@ const App = () => {
       {/* Mobile Sidebar Overlay */}
       {state.mobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-30 2xl:hidden backdrop-blur-sm"
           onClick={() => actions.setMobileMenuOpen(false)}
         />
       )}
