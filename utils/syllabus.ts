@@ -377,20 +377,38 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     }
   } 
   else if (op === Operation.DIV) {
+    // Only use decimal division if specifically mentioned in stage or for elite decimal levels
+    const isDecimalDiv = level.decimalPlaces > 0 &&
+        (stage.name.toLowerCase().includes('decimal') ||
+         stage.description.toLowerCase().includes('decimal') ||
+         (level.id >= 10 && level.id <= 11) ||
+         (level.id >= 27));
+
+    if (isDecimalDiv) {
+        const divisor = Math.floor(seededRandom(seed + 1) * 90) + 10;
+        const factor = Math.pow(10, Math.min(level.decimalPlaces, 3));
+        const quot = Math.floor(seededRandom(seed + 2) * (9 * factor)) + factor;
+    }
     if (level.decimalPlaces > 0) {
         const divisor = Math.floor(nextRand() * 90) + 10;
         const quot = Math.floor(nextRand() * 90) + 10;
 
         num2 = Number((divisor / 10).toFixed(1));
-        answer = Number((quot / 10).toFixed(level.decimalPlaces));
+        answer = Number((quot / factor).toFixed(level.decimalPlaces));
 
         num1 = Number((num2 * answer).toFixed(level.decimalPlaces + 1));
-
         expression = `${num1} ÷ ${num2}`;
     } else {
         num2 = Math.floor(nextRand() * 8) + 2;
         if (level.id >= 8 || level.id >= 25) num2 = Math.floor(nextRand() * 90) + 10;
-        const quotient = Math.floor(nextRand() * 45) + 5;
+        //const quotient = Math.floor(nextRand() * 45) + 5;
+
+        // Ensure num1 aligns with syllabus (up to 4 digits for Island 7+)
+        const maxDiv = (level.id >= 7 || level.id >= 24) ? 9999 : 499;
+        const quotient = Math.floor(nextRand() * (maxDiv / num2 - 5)) + 5;
+
+        
+        
         num1 = num2 * quotient;
         answer = quotient;
         expression = `${num1} ÷ ${num2}`;
