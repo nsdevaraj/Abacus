@@ -11,6 +11,17 @@ import CalendarMode from './components/CalendarMode';
 const App = () => {
   const { state, actions } = useAbacusGame();
 
+  if (state.loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sky-50 text-sky-600 font-bold text-xl">
+        <div className="flex flex-col items-center gap-4">
+           <div className="w-12 h-12 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin"></div>
+           Loading your abacus adventure...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col 2xl:flex-row text-gray-800 font-sans bg-sky-50 overflow-hidden relative">
       
