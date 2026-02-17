@@ -12,6 +12,7 @@ export enum Operation {
 
 export interface LevelConfig {
   id: number;
+  label?: string;
   title: string;
   abacusDesc: string;
   mentalDesc: string;

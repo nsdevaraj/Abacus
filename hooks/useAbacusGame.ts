@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { SYLLABUS, getProblemForIndex } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
 import { MathProblem, UserProgress, DailyLog } from '../types';
 
 export const useAbacusGame = () => {
+  const [learningPath, setLearningPath] = useState<'junior' | 'senior'>(() =>
+    (localStorage.getItem('abacus_learning_path') as 'junior' | 'senior') || 'junior'
+  );
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
   const [masterSeed, setMasterSeed] = useState<number>(0);
   const [problem, setProblem] = useState<MathProblem | null>(null);
@@ -21,7 +24,7 @@ export const useAbacusGame = () => {
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Default progress structure
-  const getDefaultProgress = () => SYLLABUS.map(l => ({ 
+  const getDefaultProgress = () => ALL_LEVELS.map(l => ({
     levelId: l.id, 
     completedIndices: [], 
     coins: 0, 
@@ -33,8 +36,8 @@ export const useAbacusGame = () => {
     const saved = localStorage.getItem('abacus_progress');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.length < SYLLABUS.length) {
-        return SYLLABUS.map(l => {
+      if (parsed.length < ALL_LEVELS.length) {
+        return ALL_LEVELS.map(l => {
           const existing = parsed.find((p: any) => p.levelId === l.id);
           return existing || { levelId: l.id, completedIndices: [], coins: 0, streak: 0 };
         });
@@ -53,8 +56,18 @@ export const useAbacusGame = () => {
   const [globalCoins, setGlobalCoins] = useState<number>(() => parseInt(localStorage.getItem('abacus_coins') || '0'));
   const [globalStreak, setGlobalStreak] = useState<number>(() => parseInt(localStorage.getItem('abacus_streak') || '0'));
 
-  const currentLevel = SYLLABUS.find(l => l.id === currentLevelId) || SYLLABUS[0];
-  const levelProgress = useMemo(() => progress.find(p => p.levelId === currentLevelId)!, [progress, currentLevelId]);
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : SENIOR_SYLLABUS;
+
+  useEffect(() => {
+    localStorage.setItem('abacus_learning_path', learningPath);
+    const validIds = currentSyllabus.map(l => l.id);
+    if (!validIds.includes(currentLevelId)) {
+        setCurrentLevelId(validIds[0]);
+    }
+  }, [learningPath, currentLevelId, currentSyllabus]);
+
+  const currentLevel = ALL_LEVELS.find(l => l.id === currentLevelId) || ALL_LEVELS[0];
+  const levelProgress = useMemo(() => progress.find(p => p.levelId === currentLevelId) || progress[0], [progress, currentLevelId]);
 
   useEffect(() => {
     localStorage.setItem('abacus_progress', JSON.stringify(progress));
@@ -148,6 +161,7 @@ export const useAbacusGame = () => {
       localStorage.removeItem('abacus_coins');
       localStorage.removeItem('abacus_streak');
       localStorage.removeItem('abacus_daily_logs');
+      localStorage.removeItem('abacus_learning_path');
       
       setProgress(getDefaultProgress());
       setDailyLogs([]);
@@ -156,6 +170,7 @@ export const useAbacusGame = () => {
       setMasterSeed(0);
       setMode('map');
       setPracticeType('visual');
+      setLearningPath('junior');
       setCurrentLevelId(1);
       speak("Everything has been reset. Let's start a fresh adventure!");
       setMobileMenuOpen(false);
@@ -220,6 +235,8 @@ export const useAbacusGame = () => {
 
   return {
     state: {
+      learningPath,
+      currentSyllabus,
       currentLevelId,
       masterSeed,
       problem,
@@ -239,6 +256,7 @@ export const useAbacusGame = () => {
       levelProgress
     },
     actions: {
+      setLearningPath,
       setCurrentLevelId,
       setMode,
       setPracticeType,
