@@ -318,7 +318,6 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
-// Fix: Complete the getProblemForIndex function and ensure it always returns a MathProblem object.
 export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed: number = 0): MathProblem => {
   const stage = level.stages.find(s => index >= s.range[0] && index <= s.range[1]) || level.stages[0];
   const seed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
@@ -327,104 +326,144 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
   const op = stage.operations[Math.floor(rand * stage.operations.length)];
   let num1 = 0, num2 = 0, answer = 0, expression = "";
 
-  if (op === Operation.ADD || op === Operation.SUB) {
-    const isDecimal = level.decimalPlaces > 0 && index > 30; // Decimals usually later in stages
-    const dMin = level.digitRange[0];
-    const dMax = level.digitRange[1];
-    const d = dMin + Math.floor(seededRandom(seed + 1) * (dMax - dMin + 1));
-    const rangeVal = Math.pow(10, d);
-    
-    num1 = Math.floor(seededRandom(seed + 2) * (rangeVal - rangeVal/10)) + rangeVal/10;
-    num2 = Math.floor(seededRandom(seed + 3) * (rangeVal - rangeVal/10)) + rangeVal/10;
-    
-    if (isDecimal) {
-      num1 = Number((num1 / 10).toFixed(level.decimalPlaces));
-      num2 = Number((num2 / 10).toFixed(level.decimalPlaces));
+  switch (op) {
+    case Operation.ADD:
+    case Operation.SUB: {
+      const isDecimal = level.decimalPlaces > 0 && (
+        index > 30 ||
+        stage.name.toLowerCase().includes('decimal') ||
+        stage.description.toLowerCase().includes('decimal')
+      );
+      const dMin = level.digitRange[0];
+      const dMax = level.digitRange[1];
+      const d = dMin + Math.floor(seededRandom(seed + 1) * (dMax - dMin + 1));
+      const rangeVal = Math.pow(10, d);
+
+      num1 = Math.floor(seededRandom(seed + 2) * (rangeVal - rangeVal/10)) + rangeVal/10;
+      num2 = Math.floor(seededRandom(seed + 3) * (rangeVal - rangeVal/10)) + rangeVal/10;
+
+      if (isDecimal) {
+        num1 = Number((num1 / 10).toFixed(level.decimalPlaces));
+        num2 = Number((num2 / 10).toFixed(level.decimalPlaces));
+      }
+
+      if (op === Operation.SUB && !level.allowNegative && num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+
+      answer = op === Operation.ADD ? num1 + num2 : num1 - num2;
+      if (isDecimal) {
+        answer = Number(answer.toFixed(level.decimalPlaces));
+      }
+      expression = `${num1} ${op === Operation.ADD ? '+' : '-'} ${num2}`;
+      break;
     }
 
-    if (op === Operation.SUB && !level.allowNegative && num1 < num2) [num1, num2] = [num2, num1];
-    
-    answer = op === Operation.ADD ? num1 + num2 : num1 - num2;
-    expression = `${num1} ${op === Operation.ADD ? '+' : '-'} ${num2}`;
-    if (isDecimal) answer = Number(answer.toFixed(level.decimalPlaces));
-  } 
-  else if (op === Operation.MUL) {
-    if (level.decimalPlaces > 0) {
-       num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
-       num2 = Math.floor(seededRandom(seed + 2) * 90) + 10;
-       num1 = Number((num1 / 10).toFixed(level.decimalPlaces));
-       num2 = Number((num2 / 10).toFixed(level.decimalPlaces));
-       answer = num1 * num2;
-       expression = `${num1} × ${num2}`;
-       answer = Number(answer.toFixed(level.decimalPlaces));
-    } else {
-       if (level.id >= 10 || level.id >= 27) { // 3x3
-          num1 = Math.floor(seededRandom(seed + 1) * 900) + 100;
-          num2 = Math.floor(seededRandom(seed + 2) * 900) + 100;
-       } else if (level.id >= 7 || level.id >= 24) { // 2x2 or 3x1
-          const is2x2 = seededRandom(seed + 5) > 0.5;
-          num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
-          num2 = is2x2 ? Math.floor(seededRandom(seed + 2) * 90) + 10 : Math.floor(seededRandom(seed + 3) * 9) + 1;
-       } else { // 2x1
-          num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
-          num2 = Math.floor(seededRandom(seed + 2) * 8) + 2;
-       }
-       answer = num1 * num2;
-       expression = `${num1} × ${num2}`;
+    case Operation.MUL: {
+      if (level.decimalPlaces > 0) {
+         num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
+         num2 = Math.floor(seededRandom(seed + 2) * 90) + 10;
+         num1 = Number((num1 / 10).toFixed(level.decimalPlaces));
+         num2 = Number((num2 / 10).toFixed(level.decimalPlaces));
+         answer = Number((num1 * num2).toFixed(level.decimalPlaces));
+         expression = `${num1} × ${num2}`;
+      } else {
+         // Check for Advanced Multiplication levels (3x3)
+         if (level.id >= 10 || level.id >= 27) {
+            num1 = Math.floor(seededRandom(seed + 1) * 900) + 100;
+            num2 = Math.floor(seededRandom(seed + 2) * 900) + 100;
+         }
+         // Check for Intermediate Multiplication levels (2x2 or 3x1)
+         else if (level.id >= 7 || level.id >= 24) {
+            const is2x2 = seededRandom(seed + 5) > 0.5;
+            num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
+            num2 = is2x2 ? Math.floor(seededRandom(seed + 2) * 90) + 10 : Math.floor(seededRandom(seed + 3) * 9) + 1;
+         }
+         // Basic 2x1 Multiplication
+         else {
+            num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
+            num2 = Math.floor(seededRandom(seed + 2) * 8) + 2;
+         }
+         answer = num1 * num2;
+         expression = `${num1} × ${num2}`;
+      }
+      break;
     }
-  } 
-  else if (op === Operation.DIV) {
-    if (level.decimalPlaces > 0) {
-        const divisor = Math.floor(seededRandom(seed + 1) * 90) + 10;
-        const quot = Math.floor(seededRandom(seed + 2) * 90) + 10;
 
-        num2 = Number((divisor / 10).toFixed(1));
-        answer = Number((quot / 10).toFixed(level.decimalPlaces));
+    case Operation.DIV: {
+      if (level.decimalPlaces > 0) {
+          const divisor = Math.floor(seededRandom(seed + 1) * 90) + 10;
+          const quot = Math.floor(seededRandom(seed + 2) * 90) + 10;
 
-        num1 = Number((num2 * answer).toFixed(level.decimalPlaces + 1));
+          num2 = Number((divisor / 10).toFixed(1));
+          const tempAnswer = Number((quot / 10).toFixed(level.decimalPlaces));
 
-        expression = `${num1} ÷ ${num2}`;
-    } else {
-        num2 = Math.floor(seededRandom(seed + 1) * 8) + 2;
-        if (level.id >= 8 || level.id >= 25) num2 = Math.floor(seededRandom(seed + 3) * 90) + 10;
-        const quotient = Math.floor(seededRandom(seed + 2) * 45) + 5;
-        num1 = num2 * quotient;
-        answer = quotient;
-        expression = `${num1} ÷ ${num2}`;
+          num1 = Number((num2 * tempAnswer).toFixed(level.decimalPlaces + 1));
+          answer = tempAnswer;
+          expression = `${num1} ÷ ${num2}`;
+      } else {
+          num2 = Math.floor(seededRandom(seed + 1) * 8) + 2;
+          // Check for Advanced Division levels (multi-digit divisor)
+          if (level.id >= 8 || level.id >= 25) {
+            num2 = Math.floor(seededRandom(seed + 3) * 90) + 10;
+          }
+          const quotient = Math.floor(seededRandom(seed + 2) * 45) + 5;
+          num1 = num2 * quotient;
+          answer = quotient;
+          expression = `${num1} ÷ ${num2}`;
+      }
+      break;
     }
-  } 
-  else if (op === Operation.SQRT) {
-    const root = Math.floor(seededRandom(seed + 1) * 90) + 10;
-    num1 = root * root;
-    answer = root;
-    expression = `√${num1}`;
-  } 
-  else if (op === Operation.FRACTION) {
-    if (level.id === 26) {
-        const den = [2, 4, 5, 8, 10][Math.floor(seededRandom(seed + 1) * 5)];
-        const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
-        expression = `Decimal of ${num}/${den}`;
-        answer = num / den;
-    } else {
-        const den = [2, 4, 5, 10][Math.floor(seededRandom(seed + 1) * 4)];
-        const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
-        const total = Math.floor(seededRandom(seed + 3) * 10) * den + den;
-        answer = (num / den) * total;
-        expression = `${num}/${den} of ${total}`;
+
+    case Operation.SQRT: {
+      const root = Math.floor(seededRandom(seed + 1) * 90) + 10;
+      num1 = root * root;
+      answer = root;
+      expression = `√${num1}`;
+      break;
     }
-  }
-  else if (op === Operation.PERCENT) {
-    const percent = [10, 20, 25, 50, 75][Math.floor(seededRandom(seed + 1) * 5)];
-    const total = (Math.floor(seededRandom(seed + 2) * 10) + 1) * 40;
-    answer = (percent / 100) * total;
-    expression = `${percent}% of ${total}`;
-  }
-  else if (op === Operation.BODMAS) {
-    const n1 = Math.floor(seededRandom(seed + 1) * 20) + 1;
-    const n2 = Math.floor(seededRandom(seed + 2) * 10) + 1;
-    const n3 = Math.floor(seededRandom(seed + 3) * 5) + 1;
-    expression = `(${n1} + ${n2}) × ${n3}`;
-    answer = (n1 + n2) * n3;
+
+    case Operation.FRACTION: {
+      if (level.id === 26) {
+          const den = [2, 4, 5, 8, 10][Math.floor(seededRandom(seed + 1) * 5)];
+          const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
+          expression = `Decimal of ${num}/${den}`;
+          answer = num / den;
+      } else {
+          const den = [2, 4, 5, 10][Math.floor(seededRandom(seed + 1) * 4)];
+          const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
+          const total = Math.floor(seededRandom(seed + 3) * 10) * den + den;
+          answer = (num / den) * total;
+          expression = `${num}/${den} of ${total}`;
+      }
+      break;
+    }
+
+    case Operation.PERCENT: {
+      const percent = [10, 20, 25, 50, 75][Math.floor(seededRandom(seed + 1) * 5)];
+      const total = (Math.floor(seededRandom(seed + 2) * 10) + 1) * 40;
+      answer = (percent / 100) * total;
+      expression = `${percent}% of ${total}`;
+      break;
+    }
+
+    case Operation.BODMAS: {
+      const n1 = Math.floor(seededRandom(seed + 1) * 20) + 1;
+      const n2 = Math.floor(seededRandom(seed + 2) * 10) + 1;
+      const n3 = Math.floor(seededRandom(seed + 3) * 5) + 1;
+      expression = `(${n1} + ${n2}) × ${n3}`;
+      answer = (n1 + n2) * n3;
+      break;
+    }
+
+    default: {
+      // Fallback to a simple addition problem if operation is not handled
+      num1 = Math.floor(seededRandom(seed + 1) * 9) + 1;
+      num2 = Math.floor(seededRandom(seed + 2) * 9) + 1;
+      answer = num1 + num2;
+      expression = `${num1} + ${num2}`;
+      break;
+    }
   }
 
   return {
