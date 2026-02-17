@@ -322,9 +322,12 @@ const mulberry32 = (seed: number) => {
   };
 };
 
+const seededRandom = (seed: number) => mulberry32(seed)();
+
 export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed: number = 0): MathProblem => {
   const stage = level.stages.find(s => index >= s.range[0] && index <= s.range[1]) || level.stages[0];
   const initialSeed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
+  const seed = initialSeed;
   const nextRand = mulberry32(initialSeed);
   
   const op = stage.operations[Math.floor(nextRand() * stage.operations.length)];
@@ -395,9 +398,15 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     }
 
     case Operation.DIV: {
-      if (level.decimalPlaces > 0) {
+      const isDecimal = level.decimalPlaces > 0 && (
+          stage.name.toLowerCase().includes('decimal') ||
+          stage.description.toLowerCase().includes('decimal')
+      );
+
+      if (isDecimal) {
           const divisor = Math.floor(seededRandom(seed + 1) * 90) + 10;
-          const quot = Math.floor(seededRandom(seed + 2) * 90) + 10;
+          // Use float for quotient to get varied decimal places
+          const quot = seededRandom(seed + 2) * 90 + 10;
 
           num2 = Number((divisor / 10).toFixed(1));
           const tempAnswer = Number((quot / 10).toFixed(level.decimalPlaces));
@@ -411,7 +420,14 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
           if (level.id >= 8 || level.id >= 25) {
             num2 = Math.floor(seededRandom(seed + 3) * 90) + 10;
           }
-          const quotient = Math.floor(seededRandom(seed + 2) * 45) + 5;
+
+          let quotient = Math.floor(seededRandom(seed + 2) * 45) + 5;
+
+          // Check for "4÷1" levels (Island 7, Senior Island 4 etc)
+          if (level.id === 7 || level.id === 24) {
+             quotient = Math.floor(seededRandom(seed + 2) * 900) + 100;
+          }
+
           num1 = num2 * quotient;
           answer = quotient;
           expression = `${num1} ÷ ${num2}`;
