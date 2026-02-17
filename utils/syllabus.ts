@@ -1,9 +1,10 @@
 
 import { LevelConfig, Operation, MathProblem, StageConfig } from '../types';
 
-export const SYLLABUS: LevelConfig[] = [
+export const JUNIOR_SYLLABUS: LevelConfig[] = [
   {
     id: 1,
+    label: "Island 1",
     title: "Abacus & Finger Theory",
     abacusDesc: "Introduction to beads and +/- 5 combinations. 1 to 99 numbers.",
     mentalDesc: "Visualizing 1-digit simple addition/subtraction.",
@@ -20,6 +21,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 2,
+    label: "Island 2",
     title: "+10 Combinations",
     abacusDesc: "Mastering the carry rule with 10-complements. 1 to 99 range.",
     mentalDesc: "Fast 1-digit +/- 5 visualization.",
@@ -35,6 +37,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 3,
+    label: "Island 3",
     title: "-10 Combinations",
     abacusDesc: "Mastering borrowing with 10-complements. 1 to 99 range.",
     mentalDesc: "Mixed +/- 5 combinations mental practice.",
@@ -50,6 +53,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 4,
+    label: "Island 4",
     title: "Combination Fusion",
     abacusDesc: "Integrating all +/- 5 and +10 combinations. Numbers 1-99.",
     mentalDesc: "1 & 2 digit mental theory (non-combination).",
@@ -64,6 +68,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 5,
+    label: "Island 5",
     title: "Intro to Multiplication",
     abacusDesc: "Double combinations (-10, +6 to +9, -6 to -9). Multiplication 2x1.",
     mentalDesc: "Mental +/- 5, +/- 10 combinations.",
@@ -79,6 +84,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 6,
+    label: "Island 6",
     title: "Decimals & Large Mult",
     abacusDesc: "2 & 3 digit combinations. Decimals (3 digits). Mult up to 4x1.",
     mentalDesc: "2-digit all combinations mental add/sub.",
@@ -94,6 +100,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 7,
+    label: "Island 7",
     title: "Division Journey",
     abacusDesc: "Up to 4-digit combinations. Decimals (4 digits). Mult 2x2. Div up to 4÷1.",
     mentalDesc: "2 & 3 digit mental theory with decimals.",
@@ -110,6 +117,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 8,
+    label: "Island 8",
     title: "Mastery Operations",
     abacusDesc: "Mult 3x2. Div up to 4÷2. 3 & 4 digit complex combinations.",
     mentalDesc: "Mental 4-digit decimals and 2x2 mult.",
@@ -125,6 +133,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 9,
+    label: "Island 9",
     title: "Fractions & BODMAS",
     abacusDesc: "4 & 5 digit add/sub. Mult 4x2. Div up to 5÷2. Fractions & BODMAS.",
     mentalDesc: "Mental 2x2 and 3x2 multiplication.",
@@ -141,6 +150,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 10,
+    label: "Island 10",
     title: "Percentages & Combined",
     abacusDesc: "3x3 Mult, 4x2 Mult. 5-digit decimals. Fractions combined. Percentages.",
     mentalDesc: "Mental decimal mult/div and fractions.",
@@ -156,6 +166,7 @@ export const SYLLABUS: LevelConfig[] = [
   },
   {
     id: 11,
+    label: "Island 11",
     title: "Grand Mastery",
     abacusDesc: "5÷2 Div. Square Roots (3 & 4 digits). Combined operations.",
     mentalDesc: "Mixed calculations with BODMAS rule.",
@@ -169,6 +180,138 @@ export const SYLLABUS: LevelConfig[] = [
     ]
   }
 ];
+
+export const SENIOR_SYLLABUS: LevelConfig[] = [
+  {
+    id: 21,
+    label: "Level 1A",
+    title: "Abacus & Finger Theory",
+    abacusDesc: "Abacus & Finger Theory, Addition & subtraction, 1 to 99 numbers, +5 combination - 5 combinations and + 10 combinations",
+    mentalDesc: "Addition & subtraction, 1 & 2 digits (non combination), Lower and upper beads",
+    operations: [Operation.ADD, Operation.SUB],
+    digitRange: [1, 2],
+    decimalPlaces: 0,
+    allowNegative: false,
+    stages: [
+        { name: "Basics", operations: [Operation.ADD, Operation.SUB], range: [1, 50], description: "1 to 99 numbers, +5/-5 combinations" },
+        { name: "+10 Combinations", operations: [Operation.ADD], range: [51, 100], description: "+10 combinations" }
+    ]
+  },
+  {
+      id: 22,
+      label: "Level 2A",
+      title: "Level 2A",
+      abacusDesc: "Addition & subtraction (-10 combinations, +6 to +9 and -6 to -9 double combinations). Multiplication 2 digits x 1 digit (with tables 1 to 9)",
+      mentalDesc: "Addition & subtraction, 1 & 2 digits, +5 combination, -5 combination (+10 combinations)",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL],
+      digitRange: [1, 2],
+      decimalPlaces: 0,
+      allowNegative: false,
+      stages: [
+          { name: "-10 & Double", operations: [Operation.ADD, Operation.SUB], range: [1, 50], description: "-10 and double combinations" },
+          { name: "Multiplication", operations: [Operation.MUL], range: [51, 100], description: "2 digits x 1 digit" }
+      ]
+  },
+  {
+      id: 23,
+      label: "Level 3A",
+      title: "Level 3A",
+      abacusDesc: "Addition & subtraction 2 & 3digits all combinations, Decimals 3 digits decimal addition and subtraction. Multiplication 2 digits x 1digit, 3digits x 1 digit and 4 digit x1 digit.",
+      mentalDesc: "Addition & subtraction 2 digits all combinations, Multiplication 2 digits x 1digit, 3digits x 1 digit",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL],
+      digitRange: [2, 3],
+      decimalPlaces: 3,
+      allowNegative: false,
+      stages: [
+          { name: "Add/Sub Mixed", operations: [Operation.ADD, Operation.SUB], range: [1, 40], description: "2 & 3 digits all combinations" },
+          { name: "Decimals", operations: [Operation.ADD, Operation.SUB], range: [41, 70], description: "3 digits decimal addition and subtraction" },
+          { name: "Multiplication", operations: [Operation.MUL], range: [71, 100], description: "2x1, 3x1, 4x1" }
+      ]
+  },
+  {
+      id: 24,
+      label: "Level 4A",
+      title: "Level 4A",
+      abacusDesc: "Addition & subtraction 2 3 & 4 digits all combinations, decimals 4 digits all combinations. Multiplication 3 & 4 digits x 1 digit, 2 digits x 2 digits. Division 2,3 and 4 digits ÷ 1 digits.",
+      mentalDesc: "Addition & subtraction 2 & 3 digits all combinations, decimals 3 digits all combinations. Multiplication 2,3 and 4 digits x 1 digit",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV],
+      digitRange: [2, 4],
+      decimalPlaces: 4,
+      allowNegative: false,
+      stages: [
+          { name: "Large Add/Sub", operations: [Operation.ADD, Operation.SUB], range: [1, 30], description: "2, 3 & 4 digits all combinations" },
+          { name: "Multiplication", operations: [Operation.MUL], range: [31, 60], description: "3x1, 4x1, 2x2" },
+          { name: "Division", operations: [Operation.DIV], range: [61, 100], description: "2,3,4 digits ÷ 1 digit" }
+      ]
+  },
+  {
+      id: 25,
+      label: "Level 5A",
+      title: "Level 5A",
+      abacusDesc: "Addition & subtraction (3 & 4 digits all combinations). Multiplication (2x2 digits, 3×2 digits). Division 3÷1 digits, 4÷1 digit, 3÷2 digits and 4÷2digits",
+      mentalDesc: "Addition & subtraction (2&3 digits all combinations). Decimal 4 digits all combinations. Multiplication 3 x 1 digit,4×1 digit 2 x 2 digits. Division 2÷1 digit, 3÷1digit, 4÷1digit",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV],
+      digitRange: [3, 4],
+      decimalPlaces: 0,
+      allowNegative: false,
+      stages: [
+          { name: "Add/Sub", operations: [Operation.ADD, Operation.SUB], range: [1, 30], description: "3 & 4 digits all combinations" },
+          { name: "Multiplication", operations: [Operation.MUL], range: [31, 60], description: "2x2, 3x2 digits" },
+          { name: "Division", operations: [Operation.DIV], range: [61, 100], description: "3÷1, 4÷1, 3÷2, 4÷2" }
+      ]
+  },
+  {
+      id: 26,
+      label: "Level 6A",
+      title: "Level 6A",
+      abacusDesc: "Addition & subtraction (4 & 5 digits all combinations). Multiplication 4 x 2 digits. Division 3÷2 digits, 4÷2 digits and 5÷2 digits. Fractions Conversion. BODMAS",
+      mentalDesc: "Addition & subtraction (2&3 digits all combinations). Decimal 4 digits all combinations. Multiplication 2x2 digits, 3×2 digits. Division 4÷1 digit, 3÷2. Fractions conversion. Simple addition and subtraction",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV, Operation.FRACTION, Operation.BODMAS],
+      digitRange: [4, 5],
+      decimalPlaces: 0,
+      allowNegative: true,
+      stages: [
+          { name: "Large Ops", operations: [Operation.ADD, Operation.SUB], range: [1, 25], description: "4 & 5 digits all combinations" },
+          { name: "Mul/Div", operations: [Operation.MUL, Operation.DIV], range: [26, 50], description: "4x2 Mul, 3÷2, 4÷2, 5÷2 Div" },
+          { name: "Fractions", operations: [Operation.FRACTION], range: [51, 75], description: "Fractions Conversion" },
+          { name: "BODMAS", operations: [Operation.BODMAS], range: [76, 100], description: "BODMAS" }
+      ]
+  },
+  {
+      id: 27,
+      label: "Level 7A",
+      title: "Level 7A",
+      abacusDesc: "Addition & subtraction (4 and 5 digits all combinations). Decimal 5 digits all combinations. Multiplication 3×3 digits, 4×2 digits. Division 4÷2 digits, 5÷2 digits. Fractions combined operations. Percentage",
+      mentalDesc: "Addition & subtraction 2×3 digits all combinations. Decimal 5 digits all combinations. Multiplication 3 x 2 digits. Division 4÷1digits, 3÷2 digits. Decimal additions subtractions. Decimal multiplication. Decimal divisions. Fractions",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV, Operation.FRACTION, Operation.PERCENT],
+      digitRange: [4, 5],
+      decimalPlaces: 5,
+      allowNegative: true,
+      stages: [
+          { name: "Decimal Mastery", operations: [Operation.ADD, Operation.SUB], range: [1, 30], description: "Decimal 5 digits all combinations" },
+          { name: "Advanced Mul/Div", operations: [Operation.MUL, Operation.DIV], range: [31, 60], description: "3x3, 4x2 Mul; 4÷2, 5÷2 Div" },
+          { name: "Fractions & %", operations: [Operation.FRACTION, Operation.PERCENT], range: [61, 100], description: "Fractions combined, Percentage" }
+      ]
+  },
+  {
+      id: 28,
+      label: "Level 8A",
+      title: "Level 8A",
+      abacusDesc: "Addition & subtraction 4 and 5 digits all combinations. Division 5÷2 digits. Square roots 3 and 4 digits combined operations",
+      mentalDesc: "Addition & subtraction (3 and 4 digits all combinations). Mixed calculations (÷, -, x, +) with bodmas rule. Decimal 5 digits all combinations. Multiplication 3×2 digits. Division 4÷1 digits, 3÷2 digits. Decimal additions subtractions. Decimal multiplication. Decimal divisions. Fractions",
+      operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV, Operation.SQRT, Operation.BODMAS],
+      digitRange: [4, 5],
+      decimalPlaces: 5,
+      allowNegative: true,
+      stages: [
+          { name: "Final Add/Sub", operations: [Operation.ADD, Operation.SUB], range: [1, 30], description: "4 and 5 digits all combinations" },
+          { name: "Div & Roots", operations: [Operation.DIV, Operation.SQRT], range: [31, 70], description: "Division 5÷2 digits, Square roots" },
+          { name: "Mixed Ops", operations: [Operation.BODMAS], range: [71, 100], description: "Mixed calculations with bodmas rule" }
+      ]
+  }
+];
+
+export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS];
 
 const seededRandom = (seed: number) => {
   const x = Math.sin(seed) * 10000;
@@ -206,27 +349,49 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     if (isDecimal) answer = Number(answer.toFixed(level.decimalPlaces));
   } 
   else if (op === Operation.MUL) {
-    if (level.id >= 10) { // 3x3
-       num1 = Math.floor(seededRandom(seed + 1) * 900) + 100;
-       num2 = Math.floor(seededRandom(seed + 2) * 900) + 100;
-    } else if (level.id >= 7) { // 2x2 or 3x1
-       const is2x2 = seededRandom(seed + 5) > 0.5;
+    if (level.decimalPlaces > 0) {
        num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
-       num2 = is2x2 ? Math.floor(seededRandom(seed + 2) * 90) + 10 : Math.floor(seededRandom(seed + 3) * 9) + 1;
-    } else { // 2x1
-       num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
-       num2 = Math.floor(seededRandom(seed + 2) * 8) + 2;
+       num2 = Math.floor(seededRandom(seed + 2) * 90) + 10;
+       num1 = Number((num1 / 10).toFixed(level.decimalPlaces));
+       num2 = Number((num2 / 10).toFixed(level.decimalPlaces));
+       answer = num1 * num2;
+       expression = `${num1} × ${num2}`;
+       answer = Number(answer.toFixed(level.decimalPlaces));
+    } else {
+       if (level.id >= 10 || level.id >= 27) { // 3x3
+          num1 = Math.floor(seededRandom(seed + 1) * 900) + 100;
+          num2 = Math.floor(seededRandom(seed + 2) * 900) + 100;
+       } else if (level.id >= 7 || level.id >= 24) { // 2x2 or 3x1
+          const is2x2 = seededRandom(seed + 5) > 0.5;
+          num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
+          num2 = is2x2 ? Math.floor(seededRandom(seed + 2) * 90) + 10 : Math.floor(seededRandom(seed + 3) * 9) + 1;
+       } else { // 2x1
+          num1 = Math.floor(seededRandom(seed + 1) * 90) + 10;
+          num2 = Math.floor(seededRandom(seed + 2) * 8) + 2;
+       }
+       answer = num1 * num2;
+       expression = `${num1} × ${num2}`;
     }
-    answer = num1 * num2;
-    expression = `${num1} × ${num2}`;
   } 
   else if (op === Operation.DIV) {
-    num2 = Math.floor(seededRandom(seed + 1) * 8) + 2;
-    if (level.id >= 8) num2 = Math.floor(seededRandom(seed + 3) * 90) + 10;
-    const quotient = Math.floor(seededRandom(seed + 2) * 45) + 5;
-    num1 = num2 * quotient;
-    answer = quotient;
-    expression = `${num1} ÷ ${num2}`;
+    if (level.decimalPlaces > 0) {
+        const divisor = Math.floor(seededRandom(seed + 1) * 90) + 10;
+        const quot = Math.floor(seededRandom(seed + 2) * 90) + 10;
+
+        num2 = Number((divisor / 10).toFixed(1));
+        answer = Number((quot / 10).toFixed(level.decimalPlaces));
+
+        num1 = Number((num2 * answer).toFixed(level.decimalPlaces + 1));
+
+        expression = `${num1} ÷ ${num2}`;
+    } else {
+        num2 = Math.floor(seededRandom(seed + 1) * 8) + 2;
+        if (level.id >= 8 || level.id >= 25) num2 = Math.floor(seededRandom(seed + 3) * 90) + 10;
+        const quotient = Math.floor(seededRandom(seed + 2) * 45) + 5;
+        num1 = num2 * quotient;
+        answer = quotient;
+        expression = `${num1} ÷ ${num2}`;
+    }
   } 
   else if (op === Operation.SQRT) {
     const root = Math.floor(seededRandom(seed + 1) * 90) + 10;
@@ -235,11 +400,18 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     expression = `√${num1}`;
   } 
   else if (op === Operation.FRACTION) {
-    const den = [2, 4, 5, 10][Math.floor(seededRandom(seed + 1) * 4)];
-    const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
-    const total = Math.floor(seededRandom(seed + 3) * 10) * den + den;
-    answer = (num / den) * total;
-    expression = `${num}/${den} of ${total}`;
+    if (level.id === 26) {
+        const den = [2, 4, 5, 8, 10][Math.floor(seededRandom(seed + 1) * 5)];
+        const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
+        expression = `Decimal of ${num}/${den}`;
+        answer = num / den;
+    } else {
+        const den = [2, 4, 5, 10][Math.floor(seededRandom(seed + 1) * 4)];
+        const num = Math.floor(seededRandom(seed + 2) * (den - 1)) + 1;
+        const total = Math.floor(seededRandom(seed + 3) * 10) * den + den;
+        answer = (num / den) * total;
+        expression = `${num}/${den} of ${total}`;
+    }
   }
   else if (op === Operation.PERCENT) {
     const percent = [10, 20, 25, 50, 75][Math.floor(seededRandom(seed + 1) * 5)];

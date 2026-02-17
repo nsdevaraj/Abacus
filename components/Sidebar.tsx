@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
-import { SYLLABUS } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS } from '../utils/syllabus';
 import { UserProgress } from '../types';
 
 interface SidebarProps {
@@ -16,6 +16,8 @@ interface SidebarProps {
   setCurrentLevelId: (id: number) => void;
   setMode: (mode: 'map' | 'learn' | 'practice' | 'calendar') => void;
   handleResetAll: () => void;
+  learningPath: 'junior' | 'senior';
+  setLearningPath: (path: 'junior' | 'senior') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -28,8 +30,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentLevelId,
   setCurrentLevelId,
   setMode,
-  handleResetAll
+  handleResetAll,
+  learningPath,
+  setLearningPath
 }) => {
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : SENIOR_SYLLABUS;
+
   return (
     <aside className={`
         fixed 2xl:relative inset-y-0 left-0 z-40
@@ -55,6 +61,29 @@ const Sidebar: React.FC<SidebarProps> = ({
           <h1 className="text-2xl font-black text-sky-900 tracking-tight">
             Abacus<span className="text-pink-500">Fun</span>
           </h1>
+        </div>
+
+        <div className="w-full flex p-1 bg-sky-100/50 rounded-2xl">
+            <button
+                onClick={() => setLearningPath('junior')}
+                className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                    learningPath === 'junior'
+                    ? 'bg-white text-sky-600 shadow-sm scale-100'
+                    : 'text-sky-400 hover:text-sky-600'
+                }`}
+            >
+                Junior
+            </button>
+            <button
+                onClick={() => setLearningPath('senior')}
+                className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                    learningPath === 'senior'
+                    ? 'bg-white text-pink-500 shadow-sm scale-100'
+                    : 'text-sky-400 hover:text-pink-400'
+                }`}
+            >
+                Senior
+            </button>
         </div>
         
         <div className="flex items-center gap-4 w-full">
@@ -92,9 +121,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {SYLLABUS.map((level) => {
-          const p = progress.find(item => item.levelId === level.id)!;
-          const completion = p.completedIndices.length;
+        {currentSyllabus.map((level) => {
+          const p = progress.find(item => item.levelId === level.id);
+          const completion = p ? p.completedIndices.length : 0;
 
           return (
             <button
@@ -112,7 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <div className="flex items-center justify-between relative z-10">
                  <span className={`text-[10px] font-black uppercase tracking-widest ${currentLevelId === level.id ? 'text-sky-100' : 'text-sky-300'}`}>
-                   Island {level.id}
+                   {level.label || `Island ${level.id}`}
                  </span>
                  {completion === 100 && <Sparkles className="w-4 h-4 text-yellow-300 animate-spin-slow" />}
               </div>

@@ -41,6 +41,8 @@ const App = () => {
         setCurrentLevelId={actions.setCurrentLevelId}
         setMode={actions.setMode}
         handleResetAll={actions.handleResetAll}
+        learningPath={state.learningPath}
+        setLearningPath={actions.setLearningPath}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 w-full">
