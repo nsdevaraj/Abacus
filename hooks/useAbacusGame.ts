@@ -1,11 +1,21 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
 import { MathProblem, UserProgress, DailyLog } from '../types';
+import { useDatabase } from './useDatabase';
 
 export const useAbacusGame = () => {
-  const [learningPath, setLearningPath] = useState<'junior' | 'senior'>(() =>
-    (localStorage.getItem('abacus_learning_path') as 'junior' | 'senior') || 'junior'
-  );
+  const db = useDatabase();
+  const [loading, setLoading] = useState(true);
+
+  // Default progress structure
+  const getDefaultProgress = () => ALL_LEVELS.map(l => ({
+    levelId: l.id,
+    completedIndices: [],
+    coins: 0,
+    streak: 0
+  }));
+
+  const [learningPath, setLearningPath] = useState<'junior' | 'senior'>('junior');
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
   const [masterSeed, setMasterSeed] = useState<number>(0);
   const [problem, setProblem] = useState<MathProblem | null>(null);
@@ -23,58 +33,88 @@ export const useAbacusGame = () => {
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Default progress structure
-  const getDefaultProgress = () => ALL_LEVELS.map(l => ({
-    levelId: l.id, 
-    completedIndices: [], 
-    coins: 0, 
-    streak: 0 
-  }));
-
   // Gamification state
-  const [progress, setProgress] = useState<UserProgress[]>(() => {
-    const saved = localStorage.getItem('abacus_progress');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length < ALL_LEVELS.length) {
-        return ALL_LEVELS.map(l => {
-          const existing = parsed.find((p: any) => p.levelId === l.id);
-          return existing || { levelId: l.id, completedIndices: [], coins: 0, streak: 0 };
-        });
-      }
-      return parsed;
-    }
-    return getDefaultProgress();
-  });
+  const [progress, setProgress] = useState<UserProgress[]>(getDefaultProgress());
 
   // Daily Logs state
-  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(() => {
-    const saved = localStorage.getItem('abacus_daily_logs');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
 
-  const [globalCoins, setGlobalCoins] = useState<number>(() => parseInt(localStorage.getItem('abacus_coins') || '0'));
-  const [globalStreak, setGlobalStreak] = useState<number>(() => parseInt(localStorage.getItem('abacus_streak') || '0'));
+  const [globalCoins, setGlobalCoins] = useState<number>(0);
+  const [globalStreak, setGlobalStreak] = useState<number>(0);
 
   const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : SENIOR_SYLLABUS;
 
+  // Initial Load & Migration
   useEffect(() => {
-    localStorage.setItem('abacus_learning_path', learningPath);
+    const loadData = async () => {
+      try {
+        const data = await db.getAll();
+
+        // Helper to get from DB or localStorage (migration)
+        const getOrMigrate = (key: string, defaultVal: any, parser: (v: string) => any = JSON.parse) => {
+          if (data[key]) {
+            return parser(data[key]);
+          }
+          // Migration check
+          const local = localStorage.getItem(key);
+          if (local) {
+            // Found in localStorage, save to DB for next time
+            db.setItem(key, local);
+            return parser(local);
+          }
+          return defaultVal;
+        };
+
+        const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior');
+        setLearningPath(savedPath);
+
+        const savedProgress = getOrMigrate('abacus_progress', null);
+        if (savedProgress) {
+          if (savedProgress.length < ALL_LEVELS.length) {
+            setProgress(ALL_LEVELS.map(l => {
+              const existing = savedProgress.find((p: any) => p.levelId === l.id);
+              return existing || { levelId: l.id, completedIndices: [], coins: 0, streak: 0 };
+            }));
+          } else {
+            setProgress(savedProgress);
+          }
+        }
+
+        setDailyLogs(getOrMigrate('abacus_daily_logs', []));
+        setGlobalCoins(getOrMigrate('abacus_coins', 0, parseInt));
+        setGlobalStreak(getOrMigrate('abacus_streak', 0, parseInt));
+
+      } catch (err) {
+        console.error("Failed to load data from DB", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []); // Run once on mount
+
+  // Sync state to DB
+  useEffect(() => {
+    if (loading) return;
+    db.setItem('abacus_learning_path', learningPath);
+
+    // Validate currentLevelId against new learning path
     const validIds = currentSyllabus.map(l => l.id);
     if (!validIds.includes(currentLevelId)) {
         setCurrentLevelId(validIds[0]);
     }
-  }, [learningPath, currentLevelId, currentSyllabus]);
+  }, [learningPath, currentLevelId, currentSyllabus, loading]);
 
   const currentLevel = ALL_LEVELS.find(l => l.id === currentLevelId) || ALL_LEVELS[0];
   const levelProgress = useMemo(() => progress.find(p => p.levelId === currentLevelId) || progress[0], [progress, currentLevelId]);
 
   useEffect(() => {
-    localStorage.setItem('abacus_progress', JSON.stringify(progress));
-    localStorage.setItem('abacus_coins', globalCoins.toString());
-    localStorage.setItem('abacus_streak', globalStreak.toString());
-    localStorage.setItem('abacus_daily_logs', JSON.stringify(dailyLogs));
-  }, [progress, globalCoins, globalStreak, dailyLogs]);
+    if (loading) return;
+    db.setItem('abacus_progress', JSON.stringify(progress));
+    db.setItem('abacus_coins', globalCoins.toString());
+    db.setItem('abacus_streak', globalStreak.toString());
+    db.setItem('abacus_daily_logs', JSON.stringify(dailyLogs));
+  }, [progress, globalCoins, globalStreak, dailyLogs, loading]);
 
   // --- Offline Audio Synthesis ---
   const initAudio = () => {
@@ -155,8 +195,10 @@ export const useAbacusGame = () => {
     setMobileMenuOpen(false);
   };
 
-  const handleResetAll = () => {
+  const handleResetAll = async () => {
     if (window.confirm("Are you sure you want to delete all your hard-earned coins and progress? This cannot be undone!")) {
+      await db.clear();
+      // Also clear localStorage just in case
       localStorage.removeItem('abacus_progress');
       localStorage.removeItem('abacus_coins');
       localStorage.removeItem('abacus_streak');
@@ -235,6 +277,7 @@ export const useAbacusGame = () => {
 
   return {
     state: {
+      loading,
       learningPath,
       currentSyllabus,
       currentLevelId,
