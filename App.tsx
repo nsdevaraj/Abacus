@@ -7,6 +7,9 @@ import MapMode from './components/MapMode';
 import LearnMode from './components/LearnMode';
 import PracticeMode from './components/PracticeMode';
 import CalendarMode from './components/CalendarMode';
+import CoursesMode from './components/CoursesMode';
+import ProfileMode from './components/ProfileMode';
+import BottomNav from './components/BottomNav';
 
 const App = () => {
   const { state, actions } = useAbacusGame();
@@ -23,7 +26,7 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col 2xl:flex-row text-gray-800 font-sans bg-sky-50 overflow-hidden relative">
+    <div className={`min-h-screen flex flex-col 2xl:flex-row text-gray-800 font-sans bg-sky-50 dark:bg-gray-900 overflow-hidden relative ${state.darkMode ? 'dark' : ''}`}>
       
       {/* Playful Floating Elements Background */}
       <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
@@ -57,19 +60,21 @@ const App = () => {
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 w-full">
-        <Header 
-          setMobileMenuOpen={actions.setMobileMenuOpen}
-          currentLevel={state.currentLevel}
-          levelProgress={state.levelProgress}
-          isAudioEnabled={state.isAudioEnabled}
-          setIsAudioEnabled={actions.setIsAudioEnabled}
-          mode={state.mode}
-          setMode={actions.setMode}
-          practiceType={state.practiceType}
-          setPracticeType={actions.setPracticeType}
-        />
+        {!['courses', 'profile'].includes(state.mode) && (
+          <Header
+            setMobileMenuOpen={actions.setMobileMenuOpen}
+            currentLevel={state.currentLevel}
+            levelProgress={state.levelProgress}
+            isAudioEnabled={state.isAudioEnabled}
+            setIsAudioEnabled={actions.setIsAudioEnabled}
+            mode={state.mode}
+            setMode={actions.setMode}
+            practiceType={state.practiceType}
+            setPracticeType={actions.setPracticeType}
+          />
+        )}
 
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-12 pt-4 md:pt-8 no-scrollbar w-full">
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-24 pt-4 md:pt-8 no-scrollbar w-full">
           {state.mode === 'map' && (
             <MapMode 
               practiceType={state.practiceType}
@@ -90,7 +95,22 @@ const App = () => {
           {state.mode === 'calendar' && (
             <CalendarMode logs={state.dailyLogs} />
           )}
+
+          {state.mode === 'courses' && (
+            <CoursesMode />
+          )}
+
+          {state.mode === 'profile' && (
+            <ProfileMode
+              darkMode={state.darkMode}
+              setDarkMode={actions.setDarkMode}
+              handleResetAll={actions.handleResetAll}
+              globalCoins={state.globalCoins}
+            />
+          )}
         </div>
+
+        <BottomNav mode={state.mode} setMode={actions.setMode} />
 
         {/* Practice Mode Logic: 
             If practiceType is 'mental', PracticeMode will automatically hide the abacus and numbers 

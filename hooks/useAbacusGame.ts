@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
-import { MathProblem, UserProgress, DailyLog } from '../types';
+import { MathProblem, UserProgress, DailyLog, AppMode } from '../types';
 import { useDatabase } from './useDatabase';
 
 export const useAbacusGame = () => {
@@ -23,8 +23,21 @@ export const useAbacusGame = () => {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   
   // Navigation & Game Modes
-  const [mode, setMode] = useState<'learn' | 'practice' | 'map' | 'calendar'>('map');
+  const [mode, setMode] = useState<AppMode>('map');
   const [practiceType, setPracticeType] = useState<'visual' | 'mental'>('visual');
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('abacus_dark_mode') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('abacus_dark_mode', String(darkMode));
+    } catch {}
+  }, [darkMode]);
   
   const [abacusValue, setAbacusValue] = useState<number>(0);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -296,9 +309,11 @@ export const useAbacusGame = () => {
       globalStreak,
       dailyLogs,
       currentLevel,
-      levelProgress
+      levelProgress,
+      darkMode
     },
     actions: {
+      setDarkMode,
       setLearningPath,
       setCurrentLevelId,
       setMode,

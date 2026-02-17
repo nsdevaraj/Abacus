@@ -3,7 +3,7 @@ import {
   X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
 import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS } from '../utils/syllabus';
-import { UserProgress } from '../types';
+import { UserProgress, AppMode } from '../types';
 
 interface SidebarProps {
   mobileMenuOpen: boolean;
@@ -14,7 +14,7 @@ interface SidebarProps {
   progress: UserProgress[];
   currentLevelId: number;
   setCurrentLevelId: (id: number) => void;
-  setMode: (mode: 'map' | 'learn' | 'practice' | 'calendar') => void;
+  setMode: (mode: AppMode) => void;
   handleResetAll: () => void;
   learningPath: 'junior' | 'senior';
   setLearningPath: (path: 'junior' | 'senior') => void;
