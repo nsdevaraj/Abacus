@@ -328,6 +328,7 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
   const stage = level.stages.find(s => index >= s.range[0] && index <= s.range[1]) || level.stages[0];
   const initialSeed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
   const seed = initialSeed;
+  const seededRandom = (s: number) => mulberry32(s)();
   const nextRand = mulberry32(initialSeed);
   
   const op = stage.operations[Math.floor(nextRand() * stage.operations.length)];
@@ -408,8 +409,35 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
           // Use float for quotient to get varied decimal places
           const quot = seededRandom(seed + 2) * 90 + 10;
 
+          let quotientMultiplier = 9;
+          let quotientBase = 1;
+
+          // Increase quotient size for levels requiring large dividends (e.g. 4-digit)
+          // ID 7 (Junior 7), ID 24 (Senior 4), ID 25 (Senior 5), ID 8 (Junior 8)
+          if (level.id === 7 || level.id === 24 || level.id === 25 || level.id === 8) {
+              quotientMultiplier = 900; // resulting in 100..1000 range roughly
+              quotientBase = 100;
+          }
+
+          // Generate quotient
+          const quot = Math.floor(seededRandom(seed + 2) * (quotientMultiplier * precision)) + (quotientBase * precision);
+          const tempAnswer = Number((quot / precision).toFixed(level.decimalPlaces));
+
+          // Determine divisor magnitude
+          let divisorRange = 90;
+          let divisorMin = 10;
+
+          // For levels with 2-digit divisors (Junior 8, Senior 5)
+          if (level.id === 8 || level.id === 25) {
+             // 50% chance of larger divisor
+             if (seededRandom(seed + 5) > 0.5) {
+                 divisorRange = 900; // 100..1000 / 10 -> 10.0 .. 100.0
+                 divisorMin = 100;
+             }
+          }
+
+          const divisor = Math.floor(seededRandom(seed + 1) * divisorRange) + divisorMin;
           num2 = Number((divisor / 10).toFixed(1));
-          const tempAnswer = Number((quot / 10).toFixed(level.decimalPlaces));
 
           num1 = Number((num2 * tempAnswer).toFixed(level.decimalPlaces + 1));
           answer = tempAnswer;

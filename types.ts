@@ -51,3 +51,5 @@ export interface DailyLog {
   solved: number;
   lastLevelId: number;
 }
+
+export type AppMode = 'map' | 'learn' | 'practice' | 'calendar' | 'courses' | 'profile';

@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   Menu, Ghost, Volume2, Gamepad2, Brain, BookOpen 
 } from 'lucide-react';
-import { LevelConfig, UserProgress } from '../types';
+import { LevelConfig, UserProgress, AppMode } from '../types';
 
 interface HeaderProps {
   setMobileMenuOpen: (open: boolean) => void;
@@ -10,8 +10,8 @@ interface HeaderProps {
   levelProgress: UserProgress;
   isAudioEnabled: boolean;
   setIsAudioEnabled: (enabled: boolean) => void;
-  mode: 'map' | 'learn' | 'practice' | 'calendar';
-  setMode: (mode: 'map' | 'learn' | 'practice' | 'calendar') => void;
+  mode: AppMode;
+  setMode: (mode: AppMode) => void;
   practiceType: 'visual' | 'mental';
   setPracticeType: (type: 'visual' | 'mental') => void;
 }
