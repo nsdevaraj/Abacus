@@ -313,17 +313,21 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
 
 export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS];
 
-const seededRandom = (seed: number) => {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
+const mulberry32 = (seed: number) => {
+  return () => {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
 };
 
 export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed: number = 0): MathProblem => {
   const stage = level.stages.find(s => index >= s.range[0] && index <= s.range[1]) || level.stages[0];
-  const seed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
-  const rand = seededRandom(seed);
+  const initialSeed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
+  const nextRand = mulberry32(initialSeed);
   
-  const op = stage.operations[Math.floor(rand * stage.operations.length)];
+  const op = stage.operations[Math.floor(nextRand() * stage.operations.length)];
   let num1 = 0, num2 = 0, answer = 0, expression = "";
 
   switch (op) {
@@ -467,7 +471,7 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
   }
 
   return {
-    id: `${level.id}-${index}-${seed}`,
+    id: `${level.id}-${index}-${initialSeed}`,
     expression,
     answer: Number(answer.toFixed(level.decimalPlaces || 0)),
     operation: op,
