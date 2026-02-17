@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Brain, Star, PartyPopper } from 'lucide-react';
 import { LevelConfig, UserProgress } from '../types';
 
@@ -15,6 +15,8 @@ const MapMode: React.FC<MapModeProps> = ({
   levelProgress,
   startExercise
 }) => {
+  const completedSet = useMemo(() => new Set(levelProgress.completedIndices), [levelProgress.completedIndices]);
+
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500">
       <div className="mb-8 md:mb-12 text-center">
@@ -45,7 +47,7 @@ const MapMode: React.FC<MapModeProps> = ({
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 gap-3 md:gap-4">
               {Array.from({ length: stage.range[1] - stage.range[0] + 1 }).map((_, i) => {
                 const idx = stage.range[0] + i;
-                const isCompleted = levelProgress.completedIndices.includes(idx);
+                const isCompleted = completedSet.has(idx);
                 return (
                   <button
                     key={idx}
