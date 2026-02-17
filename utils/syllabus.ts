@@ -184,7 +184,7 @@ export const JUNIOR_SYLLABUS: LevelConfig[] = [
 export const SENIOR_SYLLABUS: LevelConfig[] = [
   {
     id: 21,
-    label: "Level 1A",
+    label: "Island 1",
     title: "Abacus & Finger Theory",
     abacusDesc: "Abacus & Finger Theory, Addition & subtraction, 1 to 99 numbers, +5 combination - 5 combinations and + 10 combinations",
     mentalDesc: "Addition & subtraction, 1 & 2 digits (non combination), Lower and upper beads",
@@ -199,8 +199,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 22,
-      label: "Level 2A",
-      title: "Level 2A",
+      label: "Island 2",
+      title: "Level 1",
       abacusDesc: "Addition & subtraction (-10 combinations, +6 to +9 and -6 to -9 double combinations). Multiplication 2 digits x 1 digit (with tables 1 to 9)",
       mentalDesc: "Addition & subtraction, 1 & 2 digits, +5 combination, -5 combination (+10 combinations)",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL],
@@ -214,8 +214,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 23,
-      label: "Level 3A",
-      title: "Level 3A",
+      label: "Island 3",
+      title: "Level 2",
       abacusDesc: "Addition & subtraction 2 & 3digits all combinations, Decimals 3 digits decimal addition and subtraction. Multiplication 2 digits x 1digit, 3digits x 1 digit and 4 digit x1 digit.",
       mentalDesc: "Addition & subtraction 2 digits all combinations, Multiplication 2 digits x 1digit, 3digits x 1 digit",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL],
@@ -230,8 +230,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 24,
-      label: "Level 4A",
-      title: "Level 4A",
+      label: "Island 4",
+      title: "Level 3",
       abacusDesc: "Addition & subtraction 2 3 & 4 digits all combinations, decimals 4 digits all combinations. Multiplication 3 & 4 digits x 1 digit, 2 digits x 2 digits. Division 2,3 and 4 digits ÷ 1 digits.",
       mentalDesc: "Addition & subtraction 2 & 3 digits all combinations, decimals 3 digits all combinations. Multiplication 2,3 and 4 digits x 1 digit",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV],
@@ -246,8 +246,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 25,
-      label: "Level 5A",
-      title: "Level 5A",
+      label: "Island 5",
+      title: "Level 4",
       abacusDesc: "Addition & subtraction (3 & 4 digits all combinations). Multiplication (2x2 digits, 3×2 digits). Division 3÷1 digits, 4÷1 digit, 3÷2 digits and 4÷2digits",
       mentalDesc: "Addition & subtraction (2&3 digits all combinations). Decimal 4 digits all combinations. Multiplication 3 x 1 digit,4×1 digit 2 x 2 digits. Division 2÷1 digit, 3÷1digit, 4÷1digit",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV],
@@ -262,8 +262,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 26,
-      label: "Level 6A",
-      title: "Level 6A",
+      label: "Island 6",
+      title: "Level 5",
       abacusDesc: "Addition & subtraction (4 & 5 digits all combinations). Multiplication 4 x 2 digits. Division 3÷2 digits, 4÷2 digits and 5÷2 digits. Fractions Conversion. BODMAS",
       mentalDesc: "Addition & subtraction (2&3 digits all combinations). Decimal 4 digits all combinations. Multiplication 2x2 digits, 3×2 digits. Division 4÷1 digit, 3÷2. Fractions conversion. Simple addition and subtraction",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV, Operation.FRACTION, Operation.BODMAS],
@@ -279,8 +279,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 27,
-      label: "Level 7A",
-      title: "Level 7A",
+      label: "Island 7",
+      title: "Level 6",
       abacusDesc: "Addition & subtraction (4 and 5 digits all combinations). Decimal 5 digits all combinations. Multiplication 3×3 digits, 4×2 digits. Division 4÷2 digits, 5÷2 digits. Fractions combined operations. Percentage",
       mentalDesc: "Addition & subtraction 2×3 digits all combinations. Decimal 5 digits all combinations. Multiplication 3 x 2 digits. Division 4÷1digits, 3÷2 digits. Decimal additions subtractions. Decimal multiplication. Decimal divisions. Fractions",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV, Operation.FRACTION, Operation.PERCENT],
@@ -295,8 +295,8 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   },
   {
       id: 28,
-      label: "Level 8A",
-      title: "Level 8A",
+      label: "Island 8",
+      title: "Level 7",
       abacusDesc: "Addition & subtraction 4 and 5 digits all combinations. Division 5÷2 digits. Square roots 3 and 4 digits combined operations",
       mentalDesc: "Addition & subtraction (3 and 4 digits all combinations). Mixed calculations (÷, -, x, +) with bodmas rule. Decimal 5 digits all combinations. Multiplication 3×2 digits. Division 4÷1 digits, 3÷2 digits. Decimal additions subtractions. Decimal multiplication. Decimal divisions. Fractions",
       operations: [Operation.ADD, Operation.SUB, Operation.MUL, Operation.DIV, Operation.SQRT, Operation.BODMAS],
