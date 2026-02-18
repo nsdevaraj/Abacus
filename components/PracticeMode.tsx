@@ -3,14 +3,14 @@ import {
   ChevronLeft, Volume2, PartyPopper, Calculator, Brain, CheckCircle2, XCircle, ArrowRight, RefreshCw, Ear
 } from 'lucide-react';
 import Abacus from './Abacus';
-import { MathProblem, LevelConfig } from '../types';
+import { Problem, LevelConfig } from '../types';
 
 interface PracticeModeProps {
-  problem: MathProblem;
+  problem: Problem;
   currentLevel: LevelConfig;
   practiceType: 'visual' | 'mental';
   setMode: (mode: 'map' | 'learn' | 'practice') => void;
-  explainQuestion: (prob: MathProblem) => void;
+  explainQuestion: (prob: Problem) => void;
   showCelebration: boolean;
   setAbacusValue: (val: number) => void;
   userAnswer: string;
@@ -85,16 +85,17 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                   {/* Visual Mode: Problem Display */}
                   <div className="text-center space-y-4 md:space-y-8 animate-in zoom-in-50 duration-500">
                  
-                      <div className="text-6xl sm:text-8xl md:text-[11rem] font-black text-sky-900 tracking-tighter drop-shadow-xl select-none leading-none">
-                      {problem.expression}<span className="text-pink-500"> = </span>?
+                      <div className={`${problem.type === 'english' ? 'text-2xl md:text-4xl leading-snug max-w-4xl mx-auto py-4 whitespace-pre-wrap' : 'text-6xl sm:text-8xl md:text-[11rem] leading-none'} font-black text-sky-900 tracking-tighter drop-shadow-xl select-none`}>
+                      {problem.type === 'english' ? problem.expression : <>{problem.expression}<span className="text-pink-500"> = </span>?</>}
                       </div>
                   </div>
 
                   {/* Visual Mode: Abacus Interaction */}
+                  {problem.type !== 'english' && (
                   <div className="bg-sky-100/50 p-2 md:p-6 xl:p-10 rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-white shadow-xl md:shadow-2xl max-w-5xl mx-auto transform transition-transform hover:scale-[1.01] w-full">
                       <Abacus interactive={true} onChange={setAbacusValue} columns={11} />
-                       
                   </div>
+                  )}
                 </>
             ) : (
                 /* Mental Mode: Audio Only */
@@ -127,11 +128,11 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
             <div className="max-w-xl mx-auto space-y-6 md:space-y-10">
               <div className="relative group">
                 <input 
-                  type="number"
+                  type={problem.type === 'english' ? "text" : "number"}
                   step="any"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder="?"
+                  placeholder={problem.type === 'english' ? "Type answer..." : "?"}
                   onKeyDown={(e) => e.key === 'Enter' && checkAnswer()}
                   className={`w-full text-center text-5xl md:text-7xl font-black py-6 md:py-10 px-6 md:px-12 rounded-[2rem] md:rounded-[3.5rem] border-[6px] md:border-[10px] transition-all outline-none shadow-[0_15px_30px_-8px_rgba(0,0,0,0.15)] md:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] ${
                     feedback === 'correct' ? 'border-green-400 bg-green-50 text-green-600' :

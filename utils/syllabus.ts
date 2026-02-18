@@ -1,5 +1,6 @@
 
-import { LevelConfig, Operation, MathProblem, StageConfig } from '../types';
+import { LevelConfig, Operation, MathProblem, Problem, StageConfig } from '../types';
+import { READING_CONTENT, GRAMMAR_CONTENT, VOCAB_CONTENT, WRITING_CONTENT } from './englishContent';
 
 export const JUNIOR_SYLLABUS: LevelConfig[] = [
   {
@@ -311,7 +312,63 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
   }
 ];
 
-export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS];
+
+export const ENGLISH_SYLLABUS: LevelConfig[] = [
+  {
+    id: 101,
+    label: "Level 1",
+    title: "Reading Comprehension",
+    abacusDesc: "Read the passage and answer the question.",
+    mentalDesc: "Critical reading and understanding.",
+    operations: [Operation.READING],
+    decimalPlaces: 0,
+    allowNegative: false,
+    stages: [
+      { name: "Reading", operations: [Operation.READING], range: [1, 100], description: "Comprehension passages" }
+    ]
+  },
+  {
+    id: 102,
+    label: "Level 2",
+    title: "Grammar Fundamentals",
+    abacusDesc: "Identify nouns, verbs, adjectives.",
+    mentalDesc: "Understanding language rules.",
+    operations: [Operation.GRAMMAR],
+    decimalPlaces: 0,
+    allowNegative: false,
+    stages: [
+      { name: "Grammar", operations: [Operation.GRAMMAR], range: [1, 100], description: "Parts of speech" }
+    ]
+  },
+  {
+    id: 103,
+    label: "Level 3",
+    title: "Vocabulary Expansion",
+    abacusDesc: "Synonyms, antonyms, and meanings.",
+    mentalDesc: "Expanding word power.",
+    operations: [Operation.VOCAB],
+    decimalPlaces: 0,
+    allowNegative: false,
+    stages: [
+      { name: "Vocabulary", operations: [Operation.VOCAB], range: [1, 100], description: "Word meanings" }
+    ]
+  },
+  {
+    id: 104,
+    label: "Level 4",
+    title: "Creative Writing",
+    abacusDesc: "Punctuation, spelling, and sentence structure.",
+    mentalDesc: "Writing correctness.",
+    operations: [Operation.WRITING],
+    decimalPlaces: 0,
+    allowNegative: false,
+    stages: [
+      { name: "Writing", operations: [Operation.WRITING], range: [1, 100], description: "Writing skills" }
+    ]
+  }
+];
+
+export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS, ...ENGLISH_SYLLABUS];
 
 const mulberry32 = (seed: number) => {
   return () => {
@@ -324,7 +381,7 @@ const mulberry32 = (seed: number) => {
 
 const seededRandom = (seed: number) => mulberry32(seed)();
 
-export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed: number = 0): MathProblem => {
+export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed: number = 0): Problem => {
   const stage = level.stages.find(s => index >= s.range[0] && index <= s.range[1]) || level.stages[0];
   const initialSeed = masterSeed + level.id * 10000 + index; // Seed incorporating masterSeed
   const seed = initialSeed;
@@ -351,6 +408,7 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
       num2 = Math.floor(seededRandom(seed + 3) * (rangeVal - rangeVal/10)) + rangeVal/10;
 
       if (isDecimal) {
+          const precision = Math.pow(10, level.decimalPlaces || 0);
         num1 = Number((num1 / 10).toFixed(level.decimalPlaces));
         num2 = Number((num2 / 10).toFixed(level.decimalPlaces));
       }
@@ -405,9 +463,8 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
       );
 
       if (isDecimal) {
-          const divisor = Math.floor(seededRandom(seed + 1) * 90) + 10;
-          // Use float for quotient to get varied decimal places
-          const quot = seededRandom(seed + 2) * 90 + 10;
+          const precision = Math.pow(10, level.decimalPlaces || 0);
+          // Removed duplicate definitions
 
           let quotientMultiplier = 9;
           let quotientBase = 1;
@@ -504,6 +561,32 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
       break;
     }
 
+
+    case Operation.READING: {
+      const item = READING_CONTENT[index % READING_CONTENT.length];
+      expression = item.question;
+      answer = item.answer;
+      break;
+    }
+    case Operation.GRAMMAR: {
+      const item = GRAMMAR_CONTENT[index % GRAMMAR_CONTENT.length];
+      expression = item.question;
+      answer = item.answer;
+      break;
+    }
+    case Operation.VOCAB: {
+      const item = VOCAB_CONTENT[index % VOCAB_CONTENT.length];
+      expression = item.question;
+      answer = item.answer;
+      break;
+    }
+    case Operation.WRITING: {
+      const item = WRITING_CONTENT[index % WRITING_CONTENT.length];
+      expression = item.question;
+      answer = item.answer;
+      break;
+    }
+
     default: {
       // Fallback to a simple addition problem if operation is not handled
       num1 = Math.floor(seededRandom(seed + 1) * 9) + 1;
@@ -517,9 +600,10 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
   return {
     id: `${level.id}-${index}-${initialSeed}`,
     expression,
-    answer: Number(answer.toFixed(level.decimalPlaces || 0)),
+    answer: (typeof answer === 'string') ? answer : Number(answer.toFixed(level.decimalPlaces || 0)),
     operation: op,
     index,
-    levelId: level.id
+    levelId: level.id,
+    type: (typeof answer === 'string') ? 'english' : 'math'
   };
 };

@@ -1,4 +1,3 @@
-
 export enum Operation {
   ADD = 'addition',
   SUB = 'subtraction',
@@ -7,7 +6,11 @@ export enum Operation {
   SQRT = 'square_root',
   FRACTION = 'fractions',
   PERCENT = 'percentage',
-  BODMAS = 'bodmas'
+  BODMAS = 'bodmas',
+  READING = 'reading',
+  GRAMMAR = 'grammar',
+  VOCAB = 'vocabulary',
+  WRITING = 'creative_writing'
 }
 
 export interface LevelConfig {
@@ -17,9 +20,9 @@ export interface LevelConfig {
   abacusDesc: string;
   mentalDesc: string;
   operations: Operation[];
-  digitRange: [number, number];
-  decimalPlaces: number;
-  allowNegative: boolean;
+  digitRange?: [number, number];
+  decimalPlaces?: number;
+  allowNegative?: boolean;
   stages: StageConfig[];
 }
 
@@ -30,14 +33,20 @@ export interface StageConfig {
   description: string;
 }
 
-export interface MathProblem {
+export interface Problem {
   id: string;
-  expression: string;
-  answer: number;
+  expression: string; // For English: The question text
+  answer: number | string;
   operation: Operation;
   index: number;
   levelId: number;
+  type: 'math' | 'english';
+  hint?: string;
+  options?: string[];
 }
+
+// Backward compatibility alias (deprecated)
+export type MathProblem = Problem;
 
 export interface UserProgress {
   levelId: number;
