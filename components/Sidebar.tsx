@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
-import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS } from '../utils/syllabus';
 import { UserProgress, AppMode } from '../types';
 
 interface SidebarProps {
@@ -16,8 +16,8 @@ interface SidebarProps {
   setCurrentLevelId: (id: number) => void;
   setMode: (mode: AppMode) => void;
   handleResetAll: () => void;
-  learningPath: 'junior' | 'senior';
-  setLearningPath: (path: 'junior' | 'senior') => void;
+  learningPath: 'junior' | 'senior' | 'english';
+  setLearningPath: (path: 'junior' | 'senior' | 'english') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   learningPath,
   setLearningPath
 }) => {
-  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : SENIOR_SYLLABUS;
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : ENGLISH_SYLLABUS;
 
   return (
     <aside className={`
@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="w-full flex p-1 bg-sky-100/50 rounded-2xl">
             <button
                 onClick={() => setLearningPath('junior')}
-                className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
                     learningPath === 'junior'
                     ? 'bg-white text-sky-600 shadow-sm scale-100'
                     : 'text-sky-400 hover:text-sky-600'
@@ -76,13 +76,23 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
             <button
                 onClick={() => setLearningPath('senior')}
-                className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
                     learningPath === 'senior'
                     ? 'bg-white text-pink-500 shadow-sm scale-100'
                     : 'text-sky-400 hover:text-pink-400'
                 }`}
             >
                 Senior
+            </button>
+            <button
+                onClick={() => setLearningPath('english')}
+                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
+                    learningPath === 'english'
+                    ? 'bg-white text-emerald-500 shadow-sm scale-100'
+                    : 'text-sky-400 hover:text-emerald-400'
+                }`}
+            >
+                English
             </button>
         </div>
         

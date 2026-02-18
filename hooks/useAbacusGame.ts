@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
-import { MathProblem, UserProgress, DailyLog, AppMode } from '../types';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
+import { Problem, UserProgress, DailyLog, AppMode } from '../types';
 import { useDatabase } from './useDatabase';
 
 export const useAbacusGame = () => {
@@ -15,10 +15,10 @@ export const useAbacusGame = () => {
     streak: 0
   }));
 
-  const [learningPath, setLearningPath] = useState<'junior' | 'senior'>('junior');
+  const [learningPath, setLearningPath] = useState<'junior' | 'senior' | 'english'>('junior');
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
   const [masterSeed, setMasterSeed] = useState<number>(0);
-  const [problem, setProblem] = useState<MathProblem | null>(null);
+  const [problem, setProblem] = useState<Problem | null>(null);
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   
@@ -55,7 +55,7 @@ export const useAbacusGame = () => {
   const [globalCoins, setGlobalCoins] = useState<number>(0);
   const [globalStreak, setGlobalStreak] = useState<number>(0);
 
-  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : SENIOR_SYLLABUS;
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : ENGLISH_SYLLABUS;
 
   // Initial Load & Migration
   useEffect(() => {
@@ -78,7 +78,7 @@ export const useAbacusGame = () => {
           return defaultVal;
         };
 
-        const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior');
+        const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior' | 'english');
         setLearningPath(savedPath);
 
         const savedProgress = getOrMigrate('abacus_progress', null);
@@ -176,7 +176,11 @@ export const useAbacusGame = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  const explainQuestion = (prob: MathProblem) => {
+  const explainQuestion = (prob: Problem) => {
+    if (prob.type === 'english') {
+       speak(prob.expression);
+       return;
+    }
     const text = prob.expression
       .replace('×', 'times')
       .replace('÷', 'divided by')
@@ -234,8 +238,13 @@ export const useAbacusGame = () => {
 
   const checkAnswer = () => {
     if (!problem) return;
-    const val = parseFloat(userAnswer);
-    const isCorrect = Math.abs(val - problem.answer) < 0.0001;
+    let isCorrect = false;
+    if (problem.type === 'english') {
+       isCorrect = userAnswer.trim().toLowerCase() === String(problem.answer).trim().toLowerCase();
+    } else {
+       const val = parseFloat(userAnswer);
+       isCorrect = Math.abs(val - Number(problem.answer)) < 0.0001;
+    }
 
     if (isCorrect) {
       setFeedback('correct');
