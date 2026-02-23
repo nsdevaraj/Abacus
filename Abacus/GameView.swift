@@ -136,6 +136,13 @@ struct GameView: View {
                         Text(gameViewModel.practiceMode == .mental ? "Mental Mode" : "Visual Mode")
                             .font(.caption)
                             .fontWeight(.bold)
+                        
+                        // Problem number indicator
+                        Text("•")
+                            .font(.caption)
+                        Text("Problem \(gameViewModel.currentProblemNumber)")
+                            .font(.caption)
+                            .fontWeight(.bold)
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -522,6 +529,7 @@ class GameViewModel: ObservableObject {
     @Published var userAnswer: String = ""
     @Published var abacusViewModel = AbacusViewModel(numberOfColumns: 10)
     @Published var practiceMode: PracticeMode = .visual
+    @Published var currentProblemNumber: Int = 1
     
     let progressTracker: ProgressTracker
     
@@ -598,6 +606,12 @@ class GameViewModel: ObservableObject {
         userAnswer = ""
         abacusViewModel.reset()
         sessionStartTime = Date()
+        
+        // Get the next available problem for this stage
+        currentProblemNumber = progressTracker.getNextAvailableProblem(
+            islandId: selectedLevel,
+            stageIndex: selectedStageIndex
+        )
         
         // Setup abacus binding if in visual mode
         setupAbacusBinding()
@@ -718,6 +732,11 @@ class GameViewModel: ObservableObject {
     func checkAnswer() {
         // If we already have feedback, move to next question
         if feedback != nil {
+            // Move to next problem
+            currentProblemNumber = progressTracker.getNextAvailableProblem(
+                islandId: selectedLevel,
+                stageIndex: selectedStageIndex
+            )
             generateQuestion()
             announceQuestion()
             return
@@ -732,6 +751,14 @@ class GameViewModel: ObservableObject {
             lastAnswerCorrect = true
             feedback = "Correct! 🎉"
             score += 10 * level
+            
+            // Record problem completion
+            progressTracker.recordProblemCompletion(
+                islandId: selectedLevel,
+                stageIndex: selectedStageIndex,
+                problemNumber: currentProblemNumber,
+                isCorrect: true
+            )
             
             // Record progress
             let timeSpent = sessionStartTime != nil ? Date().timeIntervalSince(sessionStartTime!) : 60
@@ -755,6 +782,14 @@ class GameViewModel: ObservableObject {
         } else {
             lastAnswerCorrect = false
             feedback = "Not quite! The answer is \(correctAnswer)"
+            
+            // Record problem completion as incorrect
+            progressTracker.recordProblemCompletion(
+                islandId: selectedLevel,
+                stageIndex: selectedStageIndex,
+                problemNumber: currentProblemNumber,
+                isCorrect: false
+            )
             
             // Record progress
             let timeSpent = sessionStartTime != nil ? Date().timeIntervalSince(sessionStartTime!) : 60
@@ -1246,10 +1281,12 @@ struct StageSelector: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(Array(config.stages.enumerated()), id: \.element.id) { index, stage in
-                            StageCard(
+                            StageCardWithGrid(
                                 stage: stage,
                                 index: index,
+                                islandId: config.id,
                                 isSelected: gameViewModel.selectedStageIndex == index,
+                                progressTracker: gameViewModel.progressTracker,
                                 onTap: {
                                     withAnimation {
                                         gameViewModel.selectedStageIndex = index
@@ -1322,6 +1359,239 @@ struct StageCard: View {
                         Color.blue : Color.clear, lineWidth: 2)
         )
         .onTapGesture(perform: onTap)
+    }
+}
+
+// MARK: - Stage Card with Problem Grid
+
+struct StageCardWithGrid: View {
+    let stage: Stage
+    let index: Int
+    let islandId: Int
+    let isSelected: Bool
+    let progressTracker: ProgressTracker
+    let onTap: () -> Void
+    
+    @State private var showingGrid = false
+    
+    var progress: (completed: Int, total: Int) {
+        progressTracker.getStageProgress(islandId: islandId, stageIndex: index)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("\(index + 1)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .frame(width: 24, height: 24)
+                    .background(
+                        Circle()
+                            .fill(isSelected ? Color.blue : Color.gray)
+                    )
+                
+                Spacer()
+                
+                // Progress indicator
+                Text("\(progress.completed)/\(progress.total)")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(progress.completed == progress.total ? Color.green : Color.orange)
+                    )
+            }
+            
+            Text(stage.name)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text(stage.description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+            
+            HStack(spacing: 4) {
+                ForEach(stage.operations, id: \.self) { op in
+                    Text(op.rawValue)
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.2))
+                        .cornerRadius(4)
+                }
+            }
+            
+            // Button to show problem grid
+            Button(action: {
+                showingGrid = true
+            }) {
+                HStack {
+                    Image(systemName: "grid.circle.fill")
+                        .font(.caption)
+                    Text("View Progress")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                }
+                .foregroundColor(.blue)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.blue.opacity(0.1))
+                )
+            }
+        }
+        .padding()
+        .frame(width: 220, height: 180)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isSelected ? 
+                      Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isSelected ? 
+                        Color.blue : Color.clear, lineWidth: 2)
+        )
+        .onTapGesture(perform: onTap)
+        .sheet(isPresented: $showingGrid) {
+            ProblemGridView(
+                stage: stage,
+                islandId: islandId,
+                stageIndex: index,
+                progressTracker: progressTracker
+            )
+        }
+    }
+}
+
+// MARK: - Problem Grid View
+
+struct ProblemGridView: View {
+    let stage: Stage
+    let islandId: Int
+    let stageIndex: Int
+    let progressTracker: ProgressTracker
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Stage info header
+                    VStack(spacing: 8) {
+                        Text(stage.name)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        
+                        Text(stage.description)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        HStack(spacing: 6) {
+                            ForEach(stage.operations, id: \.self) { op in
+                                Text(op.rawValue)
+                                    .font(.caption)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.2))
+                                    .cornerRadius(6)
+                            }
+                        }
+                    }
+                    .padding()
+                    
+                    // 5x5 Problem Grid
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(1...25, id: \.self) { problemNumber in
+                            ProblemCell(
+                                problemNumber: problemNumber,
+                                completion: progressTracker.getProblemCompletion(
+                                    islandId: islandId,
+                                    stageIndex: stageIndex,
+                                    problemNumber: problemNumber
+                                )
+                            )
+                        }
+                    }
+                    .padding()
+                }
+            }
+            .navigationTitle("Problem Progress")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Problem Cell
+
+struct ProblemCell: View {
+    let problemNumber: Int
+    let completion: ProblemCompletion?
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            ZStack {
+                Circle()
+                    .fill(cellColor)
+                    .frame(width: 50, height: 50)
+                
+                if let completion = completion {
+                    if completion.isCorrect {
+                        Image(systemName: "checkmark")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                    } else {
+                        Image(systemName: "xmark")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                    }
+                } else {
+                    Text("\(problemNumber)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                }
+            }
+            
+            // Date display
+            if let completion = completion {
+                Text(completion.displayDate)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            } else {
+                Text("—")
+                    .font(.caption2)
+                    .foregroundColor(.clear)
+            }
+        }
+    }
+    
+    var cellColor: Color {
+        guard let completion = completion else {
+            return Color.gray.opacity(0.2)
+        }
+        
+        return completion.isCorrect ? Color.green.opacity(0.7) : Color.red.opacity(0.7)
     }
 }
 
@@ -1481,7 +1751,10 @@ struct iPadPlayingStateView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            iPadModeIndicator(practiceMode: gameViewModel.practiceMode)
+            iPadModeIndicatorWithProblem(
+                practiceMode: gameViewModel.practiceMode,
+                problemNumber: gameViewModel.currentProblemNumber
+            )
             
             // Question display with audio button
             VStack(spacing: 20) {
@@ -1644,6 +1917,38 @@ struct iPadModeIndicator: View {
             Image(systemName: practiceMode == .mental ? "ear.fill" : "eye.fill")
                 .font(.caption)
             Text(practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+                .font(.caption)
+                .fontWeight(.bold)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill((practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+        )
+        .overlay(
+            Capsule()
+                .stroke(practiceMode == .mental ? Color.purple : Color.blue, lineWidth: 1.5)
+        )
+        .foregroundColor(practiceMode == .mental ? .purple : .blue)
+    }
+}
+
+struct iPadModeIndicatorWithProblem: View {
+    let practiceMode: GameViewModel.PracticeMode
+    let problemNumber: Int
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: practiceMode == .mental ? "ear.fill" : "eye.fill")
+                .font(.caption)
+            Text(practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+                .font(.caption)
+                .fontWeight(.bold)
+            
+            Text("•")
+                .font(.caption)
+            Text("Problem \(problemNumber)")
                 .font(.caption)
                 .fontWeight(.bold)
         }

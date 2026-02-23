@@ -8,6 +8,33 @@
 import Foundation
 import Combine
 
+// MARK: - Problem Completion Model
+
+struct ProblemCompletion: Codable, Identifiable {
+    let id: UUID
+    let islandId: Int
+    let stageIndex: Int
+    let problemNumber: Int // 1-25
+    let completedDate: String // Format: "yyyy-MM-dd"
+    let isCorrect: Bool
+    
+    init(islandId: Int, stageIndex: Int, problemNumber: Int, completedDate: String, isCorrect: Bool) {
+        self.id = UUID()
+        self.islandId = islandId
+        self.stageIndex = stageIndex
+        self.problemNumber = problemNumber
+        self.completedDate = completedDate
+        self.isCorrect = isCorrect
+    }
+    
+    var displayDate: String {
+        // Convert "yyyy-MM-dd" to "dd/MM"
+        let components = completedDate.split(separator: "-")
+        guard components.count == 3 else { return "" }
+        return "\(components[2])/\(components[1])"
+    }
+}
+
 // MARK: - Daily Log Model
 
 struct DailyLog: Codable, Identifiable {
@@ -41,12 +68,15 @@ struct DailyLog: Codable, Identifiable {
 
 class ProgressTracker: ObservableObject {
     @Published var dailyLogs: [DailyLog] = []
+    @Published var problemCompletions: [ProblemCompletion] = []
     
     private let userDefaults = UserDefaults.standard
     private let logsKey = "dailyLogs"
+    private let completionsKey = "problemCompletions"
     
     init() {
         loadLogs()
+        loadCompletions()
     }
     
     // MARK: - Public Methods
@@ -79,6 +109,75 @@ class ProgressTracker: ObservableObject {
         }
         
         saveLogs()
+    }
+    
+    // MARK: - Problem Completion Tracking
+    
+    func recordProblemCompletion(islandId: Int, stageIndex: Int, problemNumber: Int, isCorrect: Bool) {
+        let today = getTodayDateString()
+        
+        // Check if this problem was already completed today
+        if let existingIndex = problemCompletions.firstIndex(where: {
+            $0.islandId == islandId &&
+            $0.stageIndex == stageIndex &&
+            $0.problemNumber == problemNumber &&
+            $0.completedDate == today
+        }) {
+            // Update existing completion
+            problemCompletions[existingIndex] = ProblemCompletion(
+                islandId: islandId,
+                stageIndex: stageIndex,
+                problemNumber: problemNumber,
+                completedDate: today,
+                isCorrect: isCorrect
+            )
+        } else {
+            // Add new completion
+            let completion = ProblemCompletion(
+                islandId: islandId,
+                stageIndex: stageIndex,
+                problemNumber: problemNumber,
+                completedDate: today,
+                isCorrect: isCorrect
+            )
+            problemCompletions.append(completion)
+        }
+        
+        saveCompletions()
+    }
+    
+    func getProblemCompletion(islandId: Int, stageIndex: Int, problemNumber: Int) -> ProblemCompletion? {
+        return problemCompletions
+            .filter { $0.islandId == islandId && $0.stageIndex == stageIndex && $0.problemNumber == problemNumber }
+            .sorted { $0.completedDate > $1.completedDate }
+            .first
+    }
+    
+    func getStageProgress(islandId: Int, stageIndex: Int) -> (completed: Int, total: Int) {
+        let completedProblems = Set(
+            problemCompletions
+                .filter { $0.islandId == islandId && $0.stageIndex == stageIndex }
+                .map { $0.problemNumber }
+        )
+        return (completedProblems.count, 25)
+    }
+    
+    func getNextAvailableProblem(islandId: Int, stageIndex: Int) -> Int {
+        let completedProblems = Set(
+            problemCompletions
+                .filter { $0.islandId == islandId && $0.stageIndex == stageIndex }
+                .map { $0.problemNumber }
+        )
+        
+        // Find first uncompleted problem
+        for i in 1...25 {
+            if !completedProblems.contains(i) {
+                return i
+            }
+        }
+        
+        // If all completed, return a random one for practice
+        return Int.random(in: 1...25)
     }
     
     func getLog(for date: String) -> DailyLog? {
@@ -121,7 +220,9 @@ class ProgressTracker: ObservableObject {
     
     func resetAllProgress() {
         dailyLogs.removeAll()
+        problemCompletions.removeAll()
         saveLogs()
+        saveCompletions()
     }
     
     // MARK: - Private Methods
@@ -136,6 +237,19 @@ class ProgressTracker: ObservableObject {
     private func saveLogs() {
         if let data = try? JSONEncoder().encode(dailyLogs) {
             userDefaults.set(data, forKey: logsKey)
+        }
+    }
+    
+    private func loadCompletions() {
+        if let data = userDefaults.data(forKey: completionsKey),
+           let completions = try? JSONDecoder().decode([ProblemCompletion].self, from: data) {
+            problemCompletions = completions
+        }
+    }
+    
+    private func saveCompletions() {
+        if let data = try? JSONEncoder().encode(problemCompletions) {
+            userDefaults.set(data, forKey: completionsKey)
         }
     }
     
