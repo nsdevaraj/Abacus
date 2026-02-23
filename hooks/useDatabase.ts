@@ -1,6 +1,6 @@
 import { localStorageAdapter } from '../db/local-storage-adapter';
 
-declare const __STORAGE_BACKEND__: 'localStorage' | 'sqlite';
+declare const __STORAGE_BACKEND__: string;
 
 type StorageApi = {
   getItem: (key: string) => Promise<string | null>;
@@ -61,11 +61,11 @@ const sqliteAdapter: StorageApi = {
 
 // --- Backend selection ---
 
-const STORAGE_BACKEND: 'localStorage' | 'sqlite' =
-  typeof __STORAGE_BACKEND__ !== 'undefined' ? __STORAGE_BACKEND__ : 'sqlite';
+const STORAGE_BACKEND =
+  typeof __STORAGE_BACKEND__ !== 'undefined' ? __STORAGE_BACKEND__.toLowerCase() : 'sqlite';
 
 const storageApi: StorageApi =
-  STORAGE_BACKEND === 'localStorage' ? localStorageAdapter : sqliteAdapter;
+  STORAGE_BACKEND === 'localstorage' ? localStorageAdapter : sqliteAdapter;
 
 console.log(`[Storage] Using ${STORAGE_BACKEND} backend`);
 
