@@ -1355,6 +1355,205 @@ struct StartGameButton: View {
     }
 }
 
+// MARK: - iPad Version without NavigationView wrapper
+
+struct GameViewiPad: View {
+    @StateObject private var gameViewModel: GameViewModel
+    @ObservedObject var progressTracker: ProgressTracker
+    
+    init(progressTracker: ProgressTracker) {
+        self.progressTracker = progressTracker
+        _gameViewModel = StateObject(wrappedValue: GameViewModel(progressTracker: progressTracker))
+    }
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            // Score and level display
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("Island")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    if let config = gameViewModel.currentLevelConfig {
+                        Text(config.label.replacingOccurrences(of: "Island ", with: ""))
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    } else {
+                        Text("\(gameViewModel.level)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(10)
+                
+                VStack(alignment: .leading) {
+                    Text("Stage")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    if let stage = gameViewModel.currentStage {
+                        Text(stage.name)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .lineLimit(2)
+                    } else {
+                        Text("1")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.purple.opacity(0.1))
+                .cornerRadius(10)
+                
+                VStack(alignment: .leading) {
+                    Text("Score")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(gameViewModel.score)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(10)
+                
+                // Today's progress
+                if let todayLog = progressTracker.getTodayLog() {
+                    VStack(alignment: .leading) {
+                        Text("Today")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("\(todayLog.problemsSolved)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(10)
+                }
+            }
+            .padding(.horizontal)
+            
+            if gameViewModel.gameState == .playing {
+                // Mode indicator badge
+                HStack(spacing: 8) {
+                    Image(systemName: gameViewModel.practiceMode == .mental ? "ear.fill" : "eye.fill")
+                        .font(.caption)
+                    Text(gameViewModel.practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(gameViewModel.practiceMode == .mental ? Color.purple : Color.blue, lineWidth: 1.5)
+                )
+                .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                
+                // Timer
+                HStack {
+                    Image(systemName: "timer")
+                        .foregroundColor(.blue)
+                    Text("\(gameViewModel.elapsedTime)s")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(10)
+                
+                // Problem display
+                VStack(spacing: 15) {
+                    Text("Problem \(gameViewModel.currentProblemIndex + 1) of \(gameViewModel.totalProblems)")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    if gameViewModel.practiceMode == .visual {
+                        Text(gameViewModel.currentProblem)
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.systemBackground))
+                            .cornerRadius(12)
+                            .shadow(radius: 2)
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Answer options - Grid layout
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                    ForEach(gameViewModel.answerOptions, id: \.self) { option in
+                        Button(action: {
+                            gameViewModel.submitAnswer(option)
+                        }) {
+                            Text("\(option)")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 20)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.blue)
+                                )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Feedback
+                if let feedback = gameViewModel.feedbackMessage {
+                    HStack {
+                        Image(systemName: feedback.contains("Correct") ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            .foregroundColor(feedback.contains("Correct") ? .green : .red)
+                        Text(feedback)
+                            .fontWeight(.semibold)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill((feedback.contains("Correct") ? Color.green : Color.red).opacity(0.1))
+                    )
+                    .padding(.horizontal)
+                }
+                
+            } else if gameViewModel.gameState == .ready {
+                ReadyStateView(gameViewModel: gameViewModel)
+            }
+            
+            Spacer()
+        }
+        .navigationTitle("Game")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if gameViewModel.gameState == .playing {
+                    Button("New Game") {
+                        gameViewModel.resetGame()
+                    }
+                } else {
+                    EmptyView()
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     GameView()
 }
