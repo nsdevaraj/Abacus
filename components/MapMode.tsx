@@ -60,7 +60,16 @@ const MapMode: React.FC<MapModeProps> = ({
                             : 'bg-white border-sky-100 text-sky-200 hover:border-pink-300 hover:text-pink-500 hover:rotate-6'
                     }`}
                   >
-                    {isCompleted ? <PartyPopper className="w-5 h-5 md:w-7 md:h-7" /> : idx}
+                    {isCompleted ? (
+                      <div className="flex flex-col items-center leading-none">
+                        <PartyPopper className="w-4 h-4 md:w-5 md:h-5" />
+                        {levelProgress.completionDates?.[idx] && (
+                          <span className="text-[8px] md:text-[10px] font-bold opacity-80 mt-0.5">
+                            {levelProgress.completionDates[idx]}
+                          </span>
+                        )}
+                      </div>
+                    ) : idx}
                   </button>
                 );
               })}

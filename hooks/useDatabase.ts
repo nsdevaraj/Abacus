@@ -1,3 +1,17 @@
+import { localStorageAdapter } from '../db/local-storage-adapter';
+
+declare const __STORAGE_BACKEND__: 'localStorage' | 'sqlite';
+
+type StorageApi = {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<void>;
+  removeItem: (key: string) => Promise<void>;
+  getAll: () => Promise<Record<string, string>>;
+  clear: () => Promise<void>;
+};
+
+// --- SQLite worker backend ---
+
 type WorkerMessage = {
   type: 'SUCCESS' | 'ERROR';
   id: number;
@@ -11,7 +25,6 @@ let messageId = 0;
 
 const getWorker = () => {
   if (!worker) {
-    // Relative path to worker from this file (hooks/useDatabase.ts -> ../db/worker.ts)
     worker = new Worker(new URL('../db/worker.ts', import.meta.url), { type: 'module' });
     worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
       const { type, id, result, error } = e.data;
@@ -38,12 +51,24 @@ const sendRequest = <T>(type: string, payload?: any): Promise<T> => {
   });
 };
 
-export const useDatabase = () => {
-  return {
-    getItem: (key: string) => sendRequest<string | null>('GET', { key }),
-    setItem: (key: string, value: string) => sendRequest<void>('SET', { key, value }),
-    removeItem: (key: string) => sendRequest<void>('DELETE', { key }),
-    getAll: () => sendRequest<Record<string, string>>('GET_ALL'),
-    clear: () => sendRequest<void>('CLEAR'),
-  };
+const sqliteAdapter: StorageApi = {
+  getItem: (key: string) => sendRequest<string | null>('GET', { key }),
+  setItem: (key: string, value: string) => sendRequest<void>('SET', { key, value }),
+  removeItem: (key: string) => sendRequest<void>('DELETE', { key }),
+  getAll: () => sendRequest<Record<string, string>>('GET_ALL'),
+  clear: () => sendRequest<void>('CLEAR'),
+};
+
+// --- Backend selection ---
+
+const STORAGE_BACKEND: 'localStorage' | 'sqlite' =
+  typeof __STORAGE_BACKEND__ !== 'undefined' ? __STORAGE_BACKEND__ : 'sqlite';
+
+const storageApi: StorageApi =
+  STORAGE_BACKEND === 'localStorage' ? localStorageAdapter : sqliteAdapter;
+
+console.log(`[Storage] Using ${STORAGE_BACKEND} backend`);
+
+export const useDatabase = (): StorageApi => {
+  return storageApi;
 };

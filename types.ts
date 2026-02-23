@@ -51,6 +51,7 @@ export type MathProblem = Problem;
 export interface UserProgress {
   levelId: number;
   completedIndices: number[];
+  completionDates: Record<number, string>; // exercise index → "DD/MM"
   coins: number;
   streak: number;
 }

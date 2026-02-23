@@ -11,6 +11,7 @@ export const useAbacusGame = () => {
   const getDefaultProgress = () => ALL_LEVELS.map(l => ({
     levelId: l.id,
     completedIndices: [],
+    completionDates: {} as Record<number, string>,
     coins: 0,
     streak: 0
   }));
@@ -86,10 +87,15 @@ export const useAbacusGame = () => {
           if (savedProgress.length < ALL_LEVELS.length) {
             setProgress(ALL_LEVELS.map(l => {
               const existing = savedProgress.find((p: any) => p.levelId === l.id);
-              return existing || { levelId: l.id, completedIndices: [], coins: 0, streak: 0 };
+              return existing
+                ? { completionDates: {}, ...existing }
+                : { levelId: l.id, completedIndices: [], completionDates: {}, coins: 0, streak: 0 };
             }));
           } else {
-            setProgress(savedProgress);
+            setProgress(savedProgress.map((p: any) => ({
+              completionDates: {},
+              ...p,
+            })));
           }
         }
 
@@ -272,9 +278,15 @@ export const useAbacusGame = () => {
       if (!levelProgress.completedIndices.includes(problem.index)) {
         const bonus = globalStreak > 5 ? 20 : 10;
         setGlobalCoins(c => c + bonus);
-        setProgress(prev => prev.map(p => 
-          p.levelId === currentLevelId 
-            ? { ...p, completedIndices: [...p.completedIndices, problem.index] }
+        const now = new Date();
+        const dateStr = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+        setProgress(prev => prev.map(p =>
+          p.levelId === currentLevelId
+            ? {
+                ...p,
+                completedIndices: [...p.completedIndices, problem.index],
+                completionDates: { ...p.completionDates, [problem.index]: dateStr },
+              }
             : p
         ));
       }
