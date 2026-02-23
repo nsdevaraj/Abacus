@@ -1483,12 +1483,153 @@ struct iPadPlayingStateView: View {
         VStack(spacing: 20) {
             iPadModeIndicator(practiceMode: gameViewModel.practiceMode)
             
-            // Note: These properties don't exist in GameViewModel yet
-            // You'll need to add them or remove these views
-            // iPadTimerView(elapsedTime: gameViewModel.elapsedTime)
-            // iPadProblemDisplay(gameViewModel: gameViewModel)
-            // iPadAnswerOptions(gameViewModel: gameViewModel)
-            // iPadFeedbackView(feedbackMessage: gameViewModel.feedbackMessage)
+            // Question display with audio button
+            VStack(spacing: 20) {
+                HStack(spacing: 15) {
+                    // In mental mode, hide the question text
+                    if gameViewModel.practiceMode == .visual {
+                        Text(gameViewModel.currentQuestion)
+                            .font(.system(size: 50, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                    } else {
+                        VStack(spacing: 8) {
+                            Image(systemName: "ear.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(.purple)
+                            Text("Listen & Solve")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.purple)
+                            Text("Question will be read aloud")
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Button(action: {
+                        gameViewModel.announceQuestion()
+                    }) {
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                            .padding(16)
+                            .background((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                            .cornerRadius(12)
+                    }
+                }
+                
+                if gameViewModel.practiceMode == .visual {
+                    Text("= ?")
+                        .font(.system(size: 50, weight: .bold, design: .rounded))
+                        .foregroundColor(.pink)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemBackground))
+            .cornerRadius(15)
+            .shadow(radius: 5)
+            .padding(.horizontal)
+            
+            // Interactive Abacus (only show in visual mode)
+            if gameViewModel.practiceMode == .visual {
+                InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
+                    .frame(height: 400)
+                    .padding(.horizontal)
+            } else {
+                // Mental mode - show a brain animation or placeholder
+                VStack(spacing: 20) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 120))
+                        .foregroundColor(.purple.opacity(0.3))
+                    
+                    Text("Use your mental abacus")
+                        .font(.title)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.purple.opacity(0.6))
+                }
+                .frame(height: 400)
+                .padding(.horizontal)
+            }
+            
+            // Answer input text field
+            VStack(spacing: 15) {
+                if gameViewModel.practiceMode == .mental {
+                    // Mental mode: user types directly
+                    TextField("Type your answer", text: $gameViewModel.userAnswer)
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(gameViewModel.feedbackColor.opacity(0.1))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(gameViewModel.feedbackColor, lineWidth: 3)
+                        )
+                        .padding(.horizontal)
+                        .keyboardType(.decimalPad)
+                        .onSubmit {
+                            gameViewModel.checkAnswer()
+                        }
+                } else {
+                    // Visual mode: abacus controls input
+                    Text(gameViewModel.userAnswer.isEmpty ? "Use abacus to answer" : gameViewModel.userAnswer)
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(gameViewModel.userAnswer.isEmpty ? .secondary : .primary)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(gameViewModel.feedbackColor.opacity(0.1))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(gameViewModel.feedbackColor, lineWidth: 3)
+                        )
+                        .padding(.horizontal)
+                }
+                
+                Button(action: {
+                    gameViewModel.checkAnswer()
+                }) {
+                    HStack {
+                        Text(gameViewModel.feedback == nil ? "Check Answer" : "Next Question")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        Image(systemName: gameViewModel.feedback == nil ? "checkmark.circle.fill" : "arrow.right.circle.fill")
+                            .font(.title)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        gameViewModel.lastAnswerCorrect && gameViewModel.feedback != nil ?
+                        Color.green : (gameViewModel.practiceMode == .mental ? Color.purple : Color.blue)
+                    )
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal)
+            }
+            
+            // Feedback
+            if let feedback = gameViewModel.feedback {
+                HStack(spacing: 10) {
+                    Image(systemName: gameViewModel.lastAnswerCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.largeTitle)
+                    Text(feedback)
+                        .font(.title2)
+                }
+                .foregroundColor(gameViewModel.lastAnswerCorrect ? .green : .red)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(gameViewModel.lastAnswerCorrect ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
+                )
+                .transition(.scale.combined(with: .opacity))
+            }
         }
     }
 }

@@ -127,66 +127,169 @@ enum NavigationItem: String, Identifiable {
 }
 
 struct LearningView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(Array(AbacusContent.Learning.tutorialList.enumerated()), id: \.offset) { index, tutorial in
-                    NavigationLink(destination: TutorialDetailView(tutorial: tutorial)) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(tutorial.title)
-                                .font(.headline)
-                            Text(tutorial.description)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+        if horizontalSizeClass == .regular {
+            // iPad: No NavigationView wrapper (uses parent NavigationSplitView)
+            ScrollView {
+                LazyVStack(spacing: 20) {
+                    ForEach(Array(AbacusContent.Learning.tutorialList.enumerated()), id: \.offset) { index, tutorial in
+                        NavigationLink(destination: TutorialDetailView(tutorial: tutorial)) {
+                            TutorialCardView(tutorial: tutorial)
                         }
-                        .padding(.vertical, 4)
+                        .buttonStyle(.plain)
                     }
                 }
+                .padding()
             }
             .navigationTitle(AbacusContent.Learning.title)
+            .navigationBarTitleDisplayMode(.large)
+        } else {
+            // iPhone: Wrapped in NavigationView
+            NavigationView {
+                List {
+                    ForEach(Array(AbacusContent.Learning.tutorialList.enumerated()), id: \.offset) { index, tutorial in
+                        NavigationLink(destination: TutorialDetailView(tutorial: tutorial)) {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(tutorial.title)
+                                    .font(.headline)
+                                Text(tutorial.description)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+                .navigationTitle(AbacusContent.Learning.title)
+            }
         }
+    }
+}
+
+// MARK: - Tutorial Card View (for iPad)
+
+struct TutorialCardView: View {
+    let tutorial: AbacusContent.Learning.Tutorial
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "book.fill")
+                    .font(.title)
+                    .foregroundColor(.blue)
+                    .frame(width: 50, height: 50)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(10)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(tutorial.title)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    
+                    Text(tutorial.description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+        }
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        )
     }
 }
 
 struct TutorialDetailView: View {
     let tutorial: AbacusContent.Learning.Tutorial
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(tutorial.description)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+            VStack(alignment: .leading, spacing: 30) {
+                // Description card
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                        Text("About")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    Text(tutorial.description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                .padding(horizontalSizeClass == .regular ? 24 : 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray6))
+                )
                 
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("Steps")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                // Steps section
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack {
+                        Image(systemName: "list.number")
+                            .font(.title2)
+                            .foregroundColor(.green)
+                        Text("Steps")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
                     
                     ForEach(Array(tutorial.steps.enumerated()), id: \.offset) { index, step in
-                        HStack(alignment: .top, spacing: 12) {
+                        HStack(alignment: .top, spacing: 16) {
                             Text("\(index + 1)")
                                 .font(.headline)
                                 .foregroundColor(.white)
-                                .frame(width: 30, height: 30)
-                                .background(Color.blue)
+                                .frame(width: horizontalSizeClass == .regular ? 40 : 30, 
+                                       height: horizontalSizeClass == .regular ? 40 : 30)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.blue.opacity(0.7)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
                                 .clipShape(Circle())
+                                .shadow(color: .blue.opacity(0.3), radius: 3, x: 0, y: 2)
                             
                             Text(step)
-                                .font(.body)
+                                .font(horizontalSizeClass == .regular ? .body : .subheadline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .padding(horizontalSizeClass == .regular ? 16 : 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 1)
+                        )
                     }
                 }
             }
-            .padding()
+            .padding(horizontalSizeClass == .regular ? 32 : 20)
         }
+        .background(Color(.systemGroupedBackground))
         .navigationTitle(tutorial.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .large : .inline)
     }
 }
 
