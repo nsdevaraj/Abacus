@@ -11,6 +11,7 @@ struct CalendarView: View {
     @ObservedObject var progressTracker: ProgressTracker
     @State private var currentDate = Date()
     @State private var selectedDate: String?
+    @State private var showingResetAlert = false
     
     private let calendar = Calendar.current
     private let monthNames = [
@@ -39,6 +40,39 @@ struct CalendarView: View {
         }
         .navigationTitle("Progress Calendar")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingResetAlert = true
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 16))
+                        Text("Reset")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.red.opacity(0.1))
+                    )
+                }
+            }
+        }
+        .alert("Reset All Progress?", isPresented: $showingResetAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) {
+                withAnimation {
+                    progressTracker.resetAllProgress()
+                    selectedDate = nil
+                }
+            }
+        } message: {
+            Text("This will permanently delete all your progress data. This action cannot be undone.")
+        }
         .onAppear {
             selectedDate = getTodayDateString()
         }

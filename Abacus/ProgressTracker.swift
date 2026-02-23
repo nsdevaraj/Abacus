@@ -119,6 +119,11 @@ class ProgressTracker: ObservableObject {
         return dailyLogs.filter { $0.date.hasPrefix(monthString) }
     }
     
+    func resetAllProgress() {
+        dailyLogs.removeAll()
+        saveLogs()
+    }
+    
     // MARK: - Private Methods
     
     private func loadLogs() {

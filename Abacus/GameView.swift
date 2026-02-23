@@ -129,28 +129,66 @@ struct GameView: View {
                 .padding(.horizontal)
                 
                 if gameViewModel.gameState == .playing {
+                    // Mode indicator badge
+                    HStack(spacing: 8) {
+                        Image(systemName: gameViewModel.practiceMode == .mental ? "ear.fill" : "eye.fill")
+                            .font(.caption)
+                        Text(gameViewModel.practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(gameViewModel.practiceMode == .mental ? Color.purple : Color.blue, lineWidth: 1.5)
+                    )
+                    .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                    
                     // Question display with audio button
                     VStack(spacing: 20) {
                         HStack(spacing: 15) {
-                            Text(gameViewModel.currentQuestion)
-                                .font(.system(size: 40, weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
+                            // In mental mode, hide the question text
+                            if gameViewModel.practiceMode == .visual {
+                                Text(gameViewModel.currentQuestion)
+                                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                                    .foregroundColor(.primary)
+                            } else {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "ear.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.purple)
+                                    Text("Listen & Solve")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.purple)
+                                    Text("Question will be read aloud")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                             
                             Button(action: {
                                 gameViewModel.announceQuestion()
                             }) {
                                 Image(systemName: "speaker.wave.2.fill")
                                     .font(.title2)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
                                     .padding(12)
-                                    .background(Color.blue.opacity(0.1))
+                                    .background((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
                                     .cornerRadius(10)
                             }
                         }
                         
-                        Text("= ?")
-                            .font(.system(size: 40, weight: .bold, design: .rounded))
-                            .foregroundColor(.pink)
+                        if gameViewModel.practiceMode == .visual {
+                            Text("= ?")
+                                .font(.system(size: 40, weight: .bold, design: .rounded))
+                                .foregroundColor(.pink)
+                        }
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
@@ -159,30 +197,66 @@ struct GameView: View {
                     .shadow(radius: 5)
                     .padding(.horizontal)
                     
-                    // Interactive Abacus
-                    InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
+                    // Interactive Abacus (only show in visual mode)
+                    if gameViewModel.practiceMode == .visual {
+                        InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
+                            .frame(height: 300)
+                            .padding(.horizontal)
+                    } else {
+                        // Mental mode - show a brain animation or placeholder
+                        VStack(spacing: 20) {
+                            Image(systemName: "brain.head.profile")
+                                .font(.system(size: 100))
+                                .foregroundColor(.purple.opacity(0.3))
+                            
+                            Text("Use your mental abacus")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.purple.opacity(0.6))
+                        }
                         .frame(height: 300)
                         .padding(.horizontal)
+                    }
                     
                     // Answer input text field
                     VStack(spacing: 15) {
-                        TextField("Type your answer", text: $gameViewModel.userAnswer)
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(gameViewModel.feedbackColor.opacity(0.1))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .stroke(gameViewModel.feedbackColor, lineWidth: 3)
-                            )
-                            .padding(.horizontal)
-                            .keyboardType(.numberPad)
-                            .onSubmit {
-                                gameViewModel.checkAnswer()
-                            }
+                        if gameViewModel.practiceMode == .mental {
+                            // Mental mode: user types directly
+                            TextField("Type your answer", text: $gameViewModel.userAnswer)
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(gameViewModel.feedbackColor.opacity(0.1))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(gameViewModel.feedbackColor, lineWidth: 3)
+                                )
+                                .padding(.horizontal)
+                                .keyboardType(.decimalPad)
+                                .onSubmit {
+                                    gameViewModel.checkAnswer()
+                                }
+                        } else {
+                            // Visual mode: abacus controls input
+                            Text(gameViewModel.userAnswer.isEmpty ? "Use abacus to answer" : gameViewModel.userAnswer)
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(gameViewModel.userAnswer.isEmpty ? .secondary : .primary)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(gameViewModel.feedbackColor.opacity(0.1))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(gameViewModel.feedbackColor, lineWidth: 3)
+                                )
+                                .padding(.horizontal)
+                        }
                         
                         Button(action: {
                             gameViewModel.checkAnswer()
@@ -199,7 +273,7 @@ struct GameView: View {
                             .padding()
                             .background(
                                 gameViewModel.lastAnswerCorrect && gameViewModel.feedback != nil ?
-                                Color.green : Color.blue
+                                Color.green : (gameViewModel.practiceMode == .mental ? Color.purple : Color.blue)
                             )
                             .cornerRadius(12)
                         }
@@ -224,186 +298,7 @@ struct GameView: View {
                     }
                     
                 } else if gameViewModel.gameState == .ready {
-                    VStack(spacing: 20) {
-                        Image(systemName: "brain.head.profile")
-                            .font(.system(size: 80))
-                            .foregroundColor(.blue)
-                        
-                        Text("Abacus Math Challenge")
-                            .font(.title)
-                            .fontWeight(.bold)
-                        
-                        Text("Test your mental math skills!")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        // Level selection
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Select Island")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            
-                            if let config = gameViewModel.currentLevelConfig {
-                                Text(config.label)
-                                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .foregroundColor(.blue)
-                                    .frame(maxWidth: .infinity)
-                                
-                                Text(config.title)
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.primary)
-                                    .frame(maxWidth: .infinity)
-                            }
-                            
-                            HStack(spacing: 12) {
-                                Button(action: {
-                                    if gameViewModel.selectedLevel > 1 {
-                                        gameViewModel.selectedLevel -= 1
-                                        gameViewModel.selectedStageIndex = 0
-                                    }
-                                }) {
-                                    Image(systemName: "chevron.left.circle.fill")
-                                        .font(.system(size: 44))
-                                        .foregroundColor(gameViewModel.selectedLevel > 1 ? .blue : .gray)
-                                }
-                                .disabled(gameViewModel.selectedLevel <= 1)
-                                
-                                Slider(value: Binding(
-                                    get: { Double(gameViewModel.selectedLevel) },
-                                    set: { 
-                                        gameViewModel.selectedLevel = Int($0)
-                                        gameViewModel.selectedStageIndex = 0
-                                    }
-                                ), in: 1...Double(JUNIOR_SYLLABUS.count), step: 1)
-                                .accentColor(.blue)
-                                
-                                Button(action: {
-                                    if gameViewModel.selectedLevel < JUNIOR_SYLLABUS.count {
-                                        gameViewModel.selectedLevel += 1
-                                        gameViewModel.selectedStageIndex = 0
-                                    }
-                                }) {
-                                    Image(systemName: "chevron.right.circle.fill")
-                                        .font(.system(size: 44))
-                                        .foregroundColor(gameViewModel.selectedLevel < JUNIOR_SYLLABUS.count ? .blue : .gray)
-                                }
-                                .disabled(gameViewModel.selectedLevel >= JUNIOR_SYLLABUS.count)
-                            }
-                            
-                            // Level indicators
-                            HStack(spacing: 4) {
-                                ForEach(1...JUNIOR_SYLLABUS.count, id: \.self) { level in
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(level <= gameViewModel.selectedLevel ? Color.blue : Color.gray.opacity(0.3))
-                                        .frame(height: 8)
-                                }
-                            }
-                            .padding(.top, 4)
-                            
-                            Text(gameViewModel.levelDescription)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: .infinity)
-                                .padding(.top, 4)
-                        }
-                        .padding(.horizontal, 40)
-                        
-                        // Stage selection
-                        if let config = gameViewModel.currentLevelConfig {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Select Stage")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
-                                        ForEach(Array(config.stages.enumerated()), id: \.element.id) { index, stage in
-                                            VStack(alignment: .leading, spacing: 8) {
-                                                HStack {
-                                                    Text("\(index + 1)")
-                                                        .font(.caption)
-                                                        .fontWeight(.bold)
-                                                        .foregroundColor(.white)
-                                                        .frame(width: 24, height: 24)
-                                                        .background(
-                                                            Circle()
-                                                                .fill(gameViewModel.selectedStageIndex == index ? Color.blue : Color.gray)
-                                                        )
-                                                    
-                                                    Spacer()
-                                                }
-                                                
-                                                Text(stage.name)
-                                                    .font(.subheadline)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(.primary)
-                                                
-                                                Text(stage.description)
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                                    .lineLimit(2)
-                                                
-                                                HStack(spacing: 4) {
-                                                    ForEach(stage.operations, id: \.self) { op in
-                                                        Text(op.rawValue)
-                                                            .font(.caption2)
-                                                            .padding(.horizontal, 6)
-                                                            .padding(.vertical, 2)
-                                                            .background(Color.blue.opacity(0.2))
-                                                            .cornerRadius(4)
-                                                    }
-                                                }
-                                            }
-                                            .padding()
-                                            .frame(width: 180, height: 140)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .fill(gameViewModel.selectedStageIndex == index ? 
-                                                          Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
-                                            )
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(gameViewModel.selectedStageIndex == index ? 
-                                                            Color.blue : Color.clear, lineWidth: 2)
-                                            )
-                                            .onTapGesture {
-                                                withAnimation {
-                                                    gameViewModel.selectedStageIndex = index
-                                                }
-                                            }
-                                        }
-                                    }
-                                    .padding(.horizontal, 40)
-                                }
-                            }
-                            .padding(.top, 10)
-                        }
-                        
-                        Button(action: {
-                            gameViewModel.startGame()
-                        }) {
-                            HStack {
-                                Text("Start Game")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                                
-                                if let stage = gameViewModel.currentStage {
-                                    Text("• \(stage.name)")
-                                        .font(.subheadline)
-                                }
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .cornerRadius(12)
-                        }
-                        .padding(.horizontal, 40)
-                        .padding(.top, 10)
-                    }
-                    .padding()
+                    ReadyStateView(gameViewModel: gameViewModel)
                 }
                 
                 Spacer()
@@ -593,6 +488,21 @@ let JUNIOR_SYLLABUS: [LevelConfig] = [
             Stage(name: "Percentage Path", operations: [.percent], range: [31, 60], description: "Interest and ratios."),
             Stage(name: "Decimal Master", operations: [.add, .sub, .mul, .div], range: [61, 100], description: "Decimal complexity.")
         ]
+    ),
+    LevelConfig(
+        id: 11,
+        label: "Island 11",
+        title: "Grand Mastery",
+        abacusDesc: "5÷2 Div. Square Roots (3 & 4 digits). Combined operations.",
+        mentalDesc: "Mixed calculations with BODMAS rule.",
+        operations: [.add, .sub, .mul, .div, .sqrt, .bodmas],
+        digitRange: [4, 5],
+        decimalPlaces: 5,
+        allowNegative: true,
+        stages: [
+            Stage(name: "Root Seeker", operations: [.sqrt], range: [1, 40], description: "3 & 4 digit roots."),
+            Stage(name: "Elite BODMAS", operations: [.bodmas], range: [41, 100], description: "The final mental test.")
+        ]
     )
 ]
 
@@ -611,12 +521,18 @@ class GameViewModel: ObservableObject {
     @Published var selectedStageIndex: Int = 0
     @Published var userAnswer: String = ""
     @Published var abacusViewModel = AbacusViewModel(numberOfColumns: 10)
+    @Published var practiceMode: PracticeMode = .visual
     
     let progressTracker: ProgressTracker
     
     private let speechSynthesizer = AVSpeechSynthesizer()
     private var cancellables = Set<AnyCancellable>()
     private var sessionStartTime: Date?
+    
+    enum PracticeMode: String, CaseIterable {
+        case visual = "Visual (with Abacus)"
+        case mental = "Mental (Audio Only)"
+    }
     
     var feedbackColor: Color {
         if feedback == nil { return .gray.opacity(0.3) }
@@ -649,21 +565,25 @@ class GameViewModel: ObservableObject {
     
     init(progressTracker: ProgressTracker = ProgressTracker()) {
         self.progressTracker = progressTracker
-        
-        // Sync abacus value changes to userAnswer
-        abacusViewModel.$columns
-            .map { columns -> Int in
-                var total = 0
-                for (index, column) in columns.enumerated() {
-                    let placeValue = Int(pow(10.0, Double(index)))
-                    total += column.value * placeValue
+    }
+    
+    func setupAbacusBinding() {
+        // Only sync abacus value changes to userAnswer in visual mode
+        if practiceMode == .visual {
+            abacusViewModel.$columns
+                .map { columns -> Int in
+                    var total = 0
+                    for (index, column) in columns.enumerated() {
+                        let placeValue = Int(pow(10.0, Double(index)))
+                        total += column.value * placeValue
+                    }
+                    return total
                 }
-                return total
-            }
-            .sink { [weak self] value in
-                self?.userAnswer = "\(value)"
-            }
-            .store(in: &cancellables)
+                .sink { [weak self] value in
+                    self?.userAnswer = "\(value)"
+                }
+                .store(in: &cancellables)
+        }
     }
     
     enum GameState {
@@ -678,6 +598,10 @@ class GameViewModel: ObservableObject {
         userAnswer = ""
         abacusViewModel.reset()
         sessionStartTime = Date()
+        
+        // Setup abacus binding if in visual mode
+        setupAbacusBinding()
+        
         generateQuestion()
         
         // Announce the first question
@@ -819,8 +743,10 @@ class GameViewModel: ObservableObject {
                 timeSpent: timeSpent / 60 // Approximate time per question
             )
             
-            // Update abacus to show correct answer
-            abacusViewModel.setValue(correctAnswer)
+            // Update abacus to show correct answer (only in visual mode)
+            if practiceMode == .visual {
+                abacusViewModel.setValue(correctAnswer)
+            }
             
             // Level up every 5 correct answers
             if (score / 10) % 5 == 0 {
@@ -840,8 +766,10 @@ class GameViewModel: ObservableObject {
                 timeSpent: timeSpent / 60
             )
             
-            // Show correct answer on abacus
-            abacusViewModel.setValue(correctAnswer)
+            // Show correct answer on abacus (only in visual mode)
+            if practiceMode == .visual {
+                abacusViewModel.setValue(correctAnswer)
+            }
         }
     }
 }
@@ -1116,6 +1044,318 @@ struct GameAbacusColumn: View {
     }
 }
 
+// MARK: - Ready State View
+
+struct ReadyStateView: View {
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                Image(systemName: gameViewModel.practiceMode == .mental ? "brain.head.profile" : "brain.head.profile")
+                    .font(.system(size: 80))
+                    .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                
+                Text("Abacus Math Challenge")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                Text("Test your mental math skills!")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                PracticeModeSelector(gameViewModel: gameViewModel)
+                
+                LevelSelector(gameViewModel: gameViewModel)
+                
+                StageSelector(gameViewModel: gameViewModel)
+                
+                StartGameButton(gameViewModel: gameViewModel)
+            }
+            .padding()
+        }
+    }
+}
+
+// MARK: - Practice Mode Selector
+
+struct PracticeModeSelector: View {
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Practice Mode")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            HStack(spacing: 12) {
+                ForEach(GameViewModel.PracticeMode.allCases, id: \.self) { mode in
+                    PracticeModeButton(mode: mode, gameViewModel: gameViewModel)
+                }
+            }
+        }
+        .padding(.horizontal, 40)
+    }
+}
+
+struct PracticeModeButton: View {
+    let mode: GameViewModel.PracticeMode
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var isSelected: Bool {
+        gameViewModel.practiceMode == mode
+    }
+    
+    var body: some View {
+        Button(action: {
+            withAnimation {
+                gameViewModel.practiceMode = mode
+            }
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: mode == .mental ? "ear.fill" : "eye.fill")
+                    .font(.title3)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(mode == .mental ? "Mental" : "Visual")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    Text(mode == .mental ? "Audio Only" : "With Abacus")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .foregroundColor(isSelected ? .white : .primary)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? 
+                          (mode == .mental ? Color.purple : Color.blue) :
+                          Color.gray.opacity(0.1))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ?
+                           (mode == .mental ? Color.purple : Color.blue) :
+                           Color.gray.opacity(0.3), lineWidth: 2)
+            )
+        }
+    }
+}
+
+// MARK: - Level Selector
+
+struct LevelSelector: View {
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Select Island")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            if let config = gameViewModel.currentLevelConfig {
+                Text(config.label)
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.blue)
+                    .frame(maxWidth: .infinity)
+                
+                Text(config.title)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity)
+            }
+            
+            HStack(spacing: 12) {
+                Button(action: {
+                    if gameViewModel.selectedLevel > 1 {
+                        gameViewModel.selectedLevel -= 1
+                        gameViewModel.selectedStageIndex = 0
+                    }
+                }) {
+                    Image(systemName: "chevron.left.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(gameViewModel.selectedLevel > 1 ? .blue : .gray)
+                }
+                .disabled(gameViewModel.selectedLevel <= 1)
+                
+                Slider(value: Binding(
+                    get: { Double(gameViewModel.selectedLevel) },
+                    set: { 
+                        gameViewModel.selectedLevel = Int($0)
+                        gameViewModel.selectedStageIndex = 0
+                    }
+                ), in: 1...Double(JUNIOR_SYLLABUS.count), step: 1)
+                .accentColor(.blue)
+                
+                Button(action: {
+                    if gameViewModel.selectedLevel < JUNIOR_SYLLABUS.count {
+                        gameViewModel.selectedLevel += 1
+                        gameViewModel.selectedStageIndex = 0
+                    }
+                }) {
+                    Image(systemName: "chevron.right.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(gameViewModel.selectedLevel < JUNIOR_SYLLABUS.count ? .blue : .gray)
+                }
+                .disabled(gameViewModel.selectedLevel >= JUNIOR_SYLLABUS.count)
+            }
+            
+            LevelIndicators(gameViewModel: gameViewModel)
+            
+            Text(gameViewModel.levelDescription)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 4)
+        }
+        .padding(.horizontal, 40)
+    }
+}
+
+struct LevelIndicators: View {
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(1...JUNIOR_SYLLABUS.count, id: \.self) { level in
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(level <= gameViewModel.selectedLevel ? Color.blue : Color.gray.opacity(0.3))
+                    .frame(height: 8)
+            }
+        }
+        .padding(.top, 4)
+    }
+}
+
+// MARK: - Stage Selector
+
+struct StageSelector: View {
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var body: some View {
+        if let config = gameViewModel.currentLevelConfig {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Select Stage")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(Array(config.stages.enumerated()), id: \.element.id) { index, stage in
+                            StageCard(
+                                stage: stage,
+                                index: index,
+                                isSelected: gameViewModel.selectedStageIndex == index,
+                                onTap: {
+                                    withAnimation {
+                                        gameViewModel.selectedStageIndex = index
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 40)
+                }
+            }
+            .padding(.top, 10)
+        }
+    }
+}
+
+struct StageCard: View {
+    let stage: Stage
+    let index: Int
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("\(index + 1)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .frame(width: 24, height: 24)
+                    .background(
+                        Circle()
+                            .fill(isSelected ? Color.blue : Color.gray)
+                    )
+                
+                Spacer()
+            }
+            
+            Text(stage.name)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text(stage.description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+            
+            HStack(spacing: 4) {
+                ForEach(stage.operations, id: \.self) { op in
+                    Text(op.rawValue)
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.2))
+                        .cornerRadius(4)
+                }
+            }
+        }
+        .padding()
+        .frame(width: 180, height: 140)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isSelected ? 
+                      Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isSelected ? 
+                        Color.blue : Color.clear, lineWidth: 2)
+        )
+        .onTapGesture(perform: onTap)
+    }
+}
+
+// MARK: - Start Game Button
+
+struct StartGameButton: View {
+    @ObservedObject var gameViewModel: GameViewModel
+    
+    var body: some View {
+        Button(action: {
+            gameViewModel.startGame()
+        }) {
+            HStack {
+                Text("Start Game")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                if let stage = gameViewModel.currentStage {
+                    Text("• \(stage.name)")
+                        .font(.subheadline)
+                }
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.green)
+            .cornerRadius(12)
+        }
+        .padding(.horizontal, 40)
+        .padding(.top, 10)
+    }
+}
+
 #Preview {
     GameView()
 }
+
