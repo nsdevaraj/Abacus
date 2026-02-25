@@ -17,14 +17,16 @@ struct ProblemCompletion: Codable, Identifiable {
     let problemNumber: Int // 1-25
     let completedDate: String // Format: "yyyy-MM-dd"
     let isCorrect: Bool
+    let practiceMode: String // "Visual (with Abacus)", "Mental (Audio Only)", or "Finger Theory"
     
-    init(islandId: Int, stageIndex: Int, problemNumber: Int, completedDate: String, isCorrect: Bool) {
+    init(islandId: Int, stageIndex: Int, problemNumber: Int, completedDate: String, isCorrect: Bool, practiceMode: String = "Visual (with Abacus)") {
         self.id = UUID()
         self.islandId = islandId
         self.stageIndex = stageIndex
         self.problemNumber = problemNumber
         self.completedDate = completedDate
         self.isCorrect = isCorrect
+        self.practiceMode = practiceMode
     }
     
     var displayDate: String {
@@ -46,8 +48,11 @@ struct DailyLog: Codable, Identifiable {
     var highestLevel: Int
     var totalScore: Int
     var timeSpent: TimeInterval // in seconds
+    var visualModeSolved: Int
+    var mentalModeSolved: Int
+    var fingerModeSolved: Int
     
-    init(date: String, problemsSolved: Int = 0, correctAnswers: Int = 0, wrongAnswers: Int = 0, highestLevel: Int = 1, totalScore: Int = 0, timeSpent: TimeInterval = 0) {
+    init(date: String, problemsSolved: Int = 0, correctAnswers: Int = 0, wrongAnswers: Int = 0, highestLevel: Int = 1, totalScore: Int = 0, timeSpent: TimeInterval = 0, visualModeSolved: Int = 0, mentalModeSolved: Int = 0, fingerModeSolved: Int = 0) {
         self.id = UUID()
         self.date = date
         self.problemsSolved = problemsSolved
@@ -56,6 +61,9 @@ struct DailyLog: Codable, Identifiable {
         self.highestLevel = highestLevel
         self.totalScore = totalScore
         self.timeSpent = timeSpent
+        self.visualModeSolved = visualModeSolved
+        self.mentalModeSolved = mentalModeSolved
+        self.fingerModeSolved = fingerModeSolved
     }
     
     var accuracy: Double {
@@ -81,7 +89,7 @@ class ProgressTracker: ObservableObject {
     
     // MARK: - Public Methods
     
-    func recordActivity(problemsSolved: Int, correct: Bool, level: Int, score: Int, timeSpent: TimeInterval = 60) {
+    func recordActivity(problemsSolved: Int, correct: Bool, level: Int, score: Int, timeSpent: TimeInterval = 60, practiceMode: String = "Visual (with Abacus)") {
         let today = getTodayDateString()
         
         if let index = dailyLogs.firstIndex(where: { $0.date == today }) {
@@ -93,9 +101,31 @@ class ProgressTracker: ObservableObject {
             log.highestLevel = max(log.highestLevel, level)
             log.totalScore += score
             log.timeSpent += timeSpent
+            
+            // Track by practice mode
+            if practiceMode == "Visual (with Abacus)" {
+                log.visualModeSolved += problemsSolved
+            } else if practiceMode == "Mental (Audio Only)" {
+                log.mentalModeSolved += problemsSolved
+            } else if practiceMode == "Finger Theory" {
+                log.fingerModeSolved += problemsSolved
+            }
+            
             dailyLogs[index] = log
         } else {
             // Create new log
+            var visualCount = 0
+            var mentalCount = 0
+            var fingerCount = 0
+            
+            if practiceMode == "Visual (with Abacus)" {
+                visualCount = problemsSolved
+            } else if practiceMode == "Mental (Audio Only)" {
+                mentalCount = problemsSolved
+            } else if practiceMode == "Finger Theory" {
+                fingerCount = problemsSolved
+            }
+            
             let log = DailyLog(
                 date: today,
                 problemsSolved: problemsSolved,
@@ -103,7 +133,10 @@ class ProgressTracker: ObservableObject {
                 wrongAnswers: correct ? 0 : 1,
                 highestLevel: level,
                 totalScore: score,
-                timeSpent: timeSpent
+                timeSpent: timeSpent,
+                visualModeSolved: visualCount,
+                mentalModeSolved: mentalCount,
+                fingerModeSolved: fingerCount
             )
             dailyLogs.append(log)
         }
@@ -113,15 +146,16 @@ class ProgressTracker: ObservableObject {
     
     // MARK: - Problem Completion Tracking
     
-    func recordProblemCompletion(islandId: Int, stageIndex: Int, problemNumber: Int, isCorrect: Bool) {
+    func recordProblemCompletion(islandId: Int, stageIndex: Int, problemNumber: Int, isCorrect: Bool, practiceMode: String = "Visual (with Abacus)") {
         let today = getTodayDateString()
         
-        // Check if this problem was already completed today
+        // Check if this problem was already completed today in this practice mode
         if let existingIndex = problemCompletions.firstIndex(where: {
             $0.islandId == islandId &&
             $0.stageIndex == stageIndex &&
             $0.problemNumber == problemNumber &&
-            $0.completedDate == today
+            $0.completedDate == today &&
+            $0.practiceMode == practiceMode
         }) {
             // Update existing completion
             problemCompletions[existingIndex] = ProblemCompletion(
@@ -129,7 +163,8 @@ class ProgressTracker: ObservableObject {
                 stageIndex: stageIndex,
                 problemNumber: problemNumber,
                 completedDate: today,
-                isCorrect: isCorrect
+                isCorrect: isCorrect,
+                practiceMode: practiceMode
             )
         } else {
             // Add new completion
@@ -138,7 +173,8 @@ class ProgressTracker: ObservableObject {
                 stageIndex: stageIndex,
                 problemNumber: problemNumber,
                 completedDate: today,
-                isCorrect: isCorrect
+                isCorrect: isCorrect,
+                practiceMode: practiceMode
             )
             problemCompletions.append(completion)
         }
@@ -146,26 +182,26 @@ class ProgressTracker: ObservableObject {
         saveCompletions()
     }
     
-    func getProblemCompletion(islandId: Int, stageIndex: Int, problemNumber: Int) -> ProblemCompletion? {
+    func getProblemCompletion(islandId: Int, stageIndex: Int, problemNumber: Int, practiceMode: String = "Visual (with Abacus)") -> ProblemCompletion? {
         return problemCompletions
-            .filter { $0.islandId == islandId && $0.stageIndex == stageIndex && $0.problemNumber == problemNumber }
+            .filter { $0.islandId == islandId && $0.stageIndex == stageIndex && $0.problemNumber == problemNumber && $0.practiceMode == practiceMode }
             .sorted { $0.completedDate > $1.completedDate }
             .first
     }
     
-    func getStageProgress(islandId: Int, stageIndex: Int) -> (completed: Int, total: Int) {
+    func getStageProgress(islandId: Int, stageIndex: Int, practiceMode: String = "Visual (with Abacus)") -> (completed: Int, total: Int) {
         let completedProblems = Set(
             problemCompletions
-                .filter { $0.islandId == islandId && $0.stageIndex == stageIndex }
+                .filter { $0.islandId == islandId && $0.stageIndex == stageIndex && $0.practiceMode == practiceMode }
                 .map { $0.problemNumber }
         )
         return (completedProblems.count, 25)
     }
     
-    func getNextAvailableProblem(islandId: Int, stageIndex: Int) -> Int {
+    func getNextAvailableProblem(islandId: Int, stageIndex: Int, practiceMode: String = "Visual (with Abacus)") -> Int {
         let completedProblems = Set(
             problemCompletions
-                .filter { $0.islandId == islandId && $0.stageIndex == stageIndex }
+                .filter { $0.islandId == islandId && $0.stageIndex == stageIndex && $0.practiceMode == practiceMode }
                 .map { $0.problemNumber }
         )
         

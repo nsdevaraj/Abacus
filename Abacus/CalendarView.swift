@@ -215,6 +215,67 @@ struct CalendarView: View {
                         color: .green
                     )
                     
+                    // Practice Mode Breakdown
+                    if log.visualModeSolved > 0 || log.mentalModeSolved > 0 || log.fingerModeSolved > 0 {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("By Practice Mode")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                            
+                            if log.visualModeSolved > 0 {
+                                HStack {
+                                    Image(systemName: "eye.fill")
+                                        .foregroundColor(.blue)
+                                        .frame(width: 24)
+                                    Text("Visual Mode:")
+                                        .font(.subheadline)
+                                    Spacer()
+                                    Text("\(log.visualModeSolved)")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            
+                            if log.mentalModeSolved > 0 {
+                                HStack {
+                                    Image(systemName: "ear.fill")
+                                        .foregroundColor(.purple)
+                                        .frame(width: 24)
+                                    Text("Mental Mode:")
+                                        .font(.subheadline)
+                                    Spacer()
+                                    Text("\(log.mentalModeSolved)")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.purple)
+                                }
+                            }
+                            
+                            if log.fingerModeSolved > 0 {
+                                HStack {
+                                    Image(systemName: "hand.raised.fill")
+                                        .foregroundColor(.orange)
+                                        .frame(width: 24)
+                                    Text("Finger Theory:")
+                                        .font(.subheadline)
+                                    Spacer()
+                                    Text("\(log.fingerModeSolved)")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.orange)
+                                }
+                            }
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.gray.opacity(0.1))
+                        )
+                    }
+                    
                     DetailRow(
                         icon: "chart.line.uptrend.xyaxis",
                         title: "Accuracy",
@@ -281,6 +342,11 @@ struct CalendarView: View {
             let totalTime = progressTracker.dailyLogs.reduce(0.0) { $0 + $1.timeSpent }
             let maxLevel = progressTracker.dailyLogs.map(\.highestLevel).max() ?? 1
             
+            // Practice mode totals
+            let totalVisual = progressTracker.dailyLogs.reduce(0) { $0 + $1.visualModeSolved }
+            let totalMental = progressTracker.dailyLogs.reduce(0) { $0 + $1.mentalModeSolved }
+            let totalFinger = progressTracker.dailyLogs.reduce(0) { $0 + $1.fingerModeSolved }
+            
             VStack(spacing: 12) {
                 DetailRow(
                     icon: "checkmark.circle.fill",
@@ -295,6 +361,67 @@ struct CalendarView: View {
                     value: "\(totalWrong)",
                     color: .red
                 )
+                
+                // Practice Mode Totals
+                if totalVisual > 0 || totalMental > 0 || totalFinger > 0 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Total by Practice Mode")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
+                        
+                        if totalVisual > 0 {
+                            HStack {
+                                Image(systemName: "eye.fill")
+                                    .foregroundColor(.blue)
+                                    .frame(width: 24)
+                                Text("Visual Mode:")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(totalVisual)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        
+                        if totalMental > 0 {
+                            HStack {
+                                Image(systemName: "ear.fill")
+                                    .foregroundColor(.purple)
+                                    .frame(width: 24)
+                                Text("Mental Mode:")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(totalMental)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.purple)
+                            }
+                        }
+                        
+                        if totalFinger > 0 {
+                            HStack {
+                                Image(systemName: "hand.raised.fill")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 24)
+                                Text("Finger Theory:")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(totalFinger)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.gray.opacity(0.1))
+                    )
+                }
                 
                 DetailRow(
                     icon: "percent",

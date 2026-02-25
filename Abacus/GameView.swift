@@ -131,9 +131,9 @@ struct GameView: View {
                 if gameViewModel.gameState == .playing {
                     // Mode indicator badge
                     HStack(spacing: 8) {
-                        Image(systemName: gameViewModel.practiceMode == .mental ? "ear.fill" : "eye.fill")
+                        Image(systemName: gameViewModel.modeIcon)
                             .font(.caption)
-                        Text(gameViewModel.practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+                        Text(gameViewModel.practiceMode.displayName)
                             .font(.caption)
                             .fontWeight(.bold)
                         
@@ -148,19 +148,19 @@ struct GameView: View {
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                            .fill(gameViewModel.modeColor.opacity(0.1))
                     )
                     .overlay(
                         Capsule()
-                            .stroke(gameViewModel.practiceMode == .mental ? Color.purple : Color.blue, lineWidth: 1.5)
+                            .stroke(gameViewModel.modeColor, lineWidth: 1.5)
                     )
-                    .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                    .foregroundColor(gameViewModel.modeColor)
                     
                     // Question display with audio button
                     VStack(spacing: 20) {
                         HStack(spacing: 15) {
                             // In mental mode, hide the question text
-                            if gameViewModel.practiceMode == .visual {
+                            if gameViewModel.practiceMode == .visual || gameViewModel.practiceMode == .finger {
                                 Text(gameViewModel.currentQuestion)
                                     .font(.system(size: 40, weight: .bold, design: .rounded))
                                     .foregroundColor(.primary)
@@ -184,14 +184,14 @@ struct GameView: View {
                             }) {
                                 Image(systemName: "speaker.wave.2.fill")
                                     .font(.title2)
-                                    .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                                    .foregroundColor(gameViewModel.modeColor)
                                     .padding(12)
-                                    .background((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                                    .background(gameViewModel.modeColor.opacity(0.1))
                                     .cornerRadius(10)
                             }
                         }
                         
-                        if gameViewModel.practiceMode == .visual {
+                        if gameViewModel.practiceMode == .visual || gameViewModel.practiceMode == .finger {
                             Text("= ?")
                                 .font(.system(size: 40, weight: .bold, design: .rounded))
                                 .foregroundColor(.pink)
@@ -204,11 +204,43 @@ struct GameView: View {
                     .shadow(radius: 5)
                     .padding(.horizontal)
                     
-                    // Interactive Abacus (only show in visual mode)
-                    if gameViewModel.practiceMode == .visual {
-                        InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
-                            .frame(height: 300)
-                            .padding(.horizontal)
+                    // Interactive Abacus or Finger Theory display
+                    if gameViewModel.practiceMode == .visual || gameViewModel.practiceMode == .finger {
+                        VStack(spacing: 10) {
+                            if gameViewModel.practiceMode == .finger {
+                                // Finger theory mode - show visual hint
+                                HStack(spacing: 15) {
+                                    Image(systemName: "hand.raised.fill")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(.orange.opacity(0.3))
+                                    
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Finger Theory Mode")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.orange)
+                                        
+                                        Text("Numbers < 100")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text("Use your fingers to visualize!")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(Color.orange.opacity(0.1))
+                                )
+                            }
+                            
+                            InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
+                                .frame(height: 300)
+                        }
+                        .padding(.horizontal)
                     } else {
                         // Mental mode - show a brain animation or placeholder
                         VStack(spacing: 20) {
@@ -227,8 +259,8 @@ struct GameView: View {
                     
                     // Answer input text field
                     VStack(spacing: 15) {
-                        if gameViewModel.practiceMode == .mental {
-                            // Mental mode: user types directly
+                        if gameViewModel.practiceMode == .mental || gameViewModel.practiceMode == .finger {
+                            // Mental/Finger mode: user types directly
                             TextField("Type your answer", text: $gameViewModel.userAnswer)
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .multilineTextAlignment(.center)
@@ -280,7 +312,7 @@ struct GameView: View {
                             .padding()
                             .background(
                                 gameViewModel.lastAnswerCorrect && gameViewModel.feedback != nil ?
-                                Color.green : (gameViewModel.practiceMode == .mental ? Color.purple : Color.blue)
+                                Color.green : gameViewModel.modeColor
                             )
                             .cornerRadius(12)
                         }
@@ -540,11 +572,44 @@ class GameViewModel: ObservableObject {
     enum PracticeMode: String, CaseIterable {
         case visual = "Visual (with Abacus)"
         case mental = "Mental (Audio Only)"
+        case finger = "Finger Theory"
+        
+        var displayName: String {
+            switch self {
+            case .visual: return "Visual Mode"
+            case .mental: return "Mental Mode"
+            case .finger: return "Finger Theory"
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .visual: return "eye.fill"
+            case .mental: return "ear.fill"
+            case .finger: return "hand.raised.fill"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .visual: return .blue
+            case .mental: return .purple
+            case .finger: return .orange
+            }
+        }
     }
     
     var feedbackColor: Color {
         if feedback == nil { return .gray.opacity(0.3) }
         return lastAnswerCorrect ? .green : .red
+    }
+    
+    var modeColor: Color {
+        return practiceMode.color
+    }
+    
+    var modeIcon: String {
+        return practiceMode.icon
     }
     
     var currentLevelConfig: LevelConfig? {
@@ -607,10 +672,11 @@ class GameViewModel: ObservableObject {
         abacusViewModel.reset()
         sessionStartTime = Date()
         
-        // Get the next available problem for this stage
+        // Get the next available problem for this stage and practice mode
         currentProblemNumber = progressTracker.getNextAvailableProblem(
             islandId: selectedLevel,
-            stageIndex: selectedStageIndex
+            stageIndex: selectedStageIndex,
+            practiceMode: practiceMode.rawValue
         )
         
         // Setup abacus binding if in visual mode
@@ -661,8 +727,14 @@ class GameViewModel: ObservableObject {
         let maxDigits = config.digitRange.count > 1 ? config.digitRange[1] : config.digitRange[0]
         
         // Calculate max number based on digits
-        let maxNum = Int(pow(10.0, Double(maxDigits))) - 1
-        let minNum = Int(pow(10.0, Double(minDigits - 1)))
+        var maxNum = Int(pow(10.0, Double(maxDigits))) - 1
+        var minNum = Int(pow(10.0, Double(minDigits - 1)))
+        
+        // FINGER THEORY MODE: Always use numbers less than 100
+        if practiceMode == .finger {
+            maxNum = min(maxNum, 99)
+            minNum = min(minNum, 1)
+        }
         
         // Choose operation from stage's allowed operations
         guard let operation = stage.operations.randomElement() else {
@@ -735,7 +807,8 @@ class GameViewModel: ObservableObject {
             // Move to next problem
             currentProblemNumber = progressTracker.getNextAvailableProblem(
                 islandId: selectedLevel,
-                stageIndex: selectedStageIndex
+                stageIndex: selectedStageIndex,
+                practiceMode: practiceMode.rawValue
             )
             generateQuestion()
             announceQuestion()
@@ -752,26 +825,28 @@ class GameViewModel: ObservableObject {
             feedback = "Correct! 🎉"
             score += 10 * level
             
-            // Record problem completion
+            // Record problem completion with practice mode
             progressTracker.recordProblemCompletion(
                 islandId: selectedLevel,
                 stageIndex: selectedStageIndex,
                 problemNumber: currentProblemNumber,
-                isCorrect: true
+                isCorrect: true,
+                practiceMode: practiceMode.rawValue
             )
             
-            // Record progress
+            // Record progress with practice mode
             let timeSpent = sessionStartTime != nil ? Date().timeIntervalSince(sessionStartTime!) : 60
             progressTracker.recordActivity(
                 problemsSolved: 1,
                 correct: true,
                 level: level,
                 score: 10 * level,
-                timeSpent: timeSpent / 60 // Approximate time per question
+                timeSpent: timeSpent / 60, // Approximate time per question
+                practiceMode: practiceMode.rawValue
             )
             
-            // Update abacus to show correct answer (only in visual mode)
-            if practiceMode == .visual {
+            // Update abacus to show correct answer (only in visual/finger mode)
+            if practiceMode == .visual || practiceMode == .finger {
                 abacusViewModel.setValue(correctAnswer)
             }
             
@@ -783,26 +858,28 @@ class GameViewModel: ObservableObject {
             lastAnswerCorrect = false
             feedback = "Not quite! The answer is \(correctAnswer)"
             
-            // Record problem completion as incorrect
+            // Record problem completion as incorrect with practice mode
             progressTracker.recordProblemCompletion(
                 islandId: selectedLevel,
                 stageIndex: selectedStageIndex,
                 problemNumber: currentProblemNumber,
-                isCorrect: false
+                isCorrect: false,
+                practiceMode: practiceMode.rawValue
             )
             
-            // Record progress
+            // Record progress with practice mode
             let timeSpent = sessionStartTime != nil ? Date().timeIntervalSince(sessionStartTime!) : 60
             progressTracker.recordActivity(
                 problemsSolved: 1,
                 correct: false,
                 level: level,
                 score: 0,
-                timeSpent: timeSpent / 60
+                timeSpent: timeSpent / 60,
+                practiceMode: practiceMode.rawValue
             )
             
-            // Show correct answer on abacus (only in visual mode)
-            if practiceMode == .visual {
+            // Show correct answer on abacus (only in visual/finger mode)
+            if practiceMode == .visual || practiceMode == .finger {
                 abacusViewModel.setValue(correctAnswer)
             }
         }
@@ -1087,9 +1164,9 @@ struct ReadyStateView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Image(systemName: gameViewModel.practiceMode == .mental ? "brain.head.profile" : "brain.head.profile")
+                Image(systemName: gameViewModel.modeIcon)
                     .font(.system(size: 80))
-                    .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                    .foregroundColor(gameViewModel.modeColor)
                 
                 Text("Abacus Math Challenge")
                     .font(.title)
@@ -1123,7 +1200,7 @@ struct PracticeModeSelector: View {
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            HStack(spacing: 12) {
+            VStack(spacing: 12) {
                 ForEach(GameViewModel.PracticeMode.allCases, id: \.self) { mode in
                     PracticeModeButton(mode: mode, gameViewModel: gameViewModel)
                 }
@@ -1141,6 +1218,22 @@ struct PracticeModeButton: View {
         gameViewModel.practiceMode == mode
     }
     
+    var modeTitle: String {
+        switch mode {
+        case .visual: return "Visual"
+        case .mental: return "Mental"
+        case .finger: return "Finger"
+        }
+    }
+    
+    var modeSubtitle: String {
+        switch mode {
+        case .visual: return "With Abacus"
+        case .mental: return "Audio Only"
+        case .finger: return "< 100 Numbers"
+        }
+    }
+    
     var body: some View {
         Button(action: {
             withAnimation {
@@ -1148,16 +1241,16 @@ struct PracticeModeButton: View {
             }
         }) {
             HStack(spacing: 8) {
-                Image(systemName: mode == .mental ? "ear.fill" : "eye.fill")
+                Image(systemName: mode.icon)
                     .font(.title3)
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(mode == .mental ? "Mental" : "Visual")
+                    Text(modeTitle)
                         .font(.headline)
                         .fontWeight(.bold)
-                    Text(mode == .mental ? "Audio Only" : "With Abacus")
+                    Text(modeSubtitle)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
                 }
             }
             .foregroundColor(isSelected ? .white : .primary)
@@ -1165,15 +1258,11 @@ struct PracticeModeButton: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? 
-                          (mode == .mental ? Color.purple : Color.blue) :
-                          Color.gray.opacity(0.1))
+                    .fill(isSelected ? mode.color : Color.gray.opacity(0.1))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ?
-                           (mode == .mental ? Color.purple : Color.blue) :
-                           Color.gray.opacity(0.3), lineWidth: 2)
+                    .stroke(isSelected ? mode.color : Color.gray.opacity(0.3), lineWidth: 2)
             )
         }
     }
@@ -1373,9 +1462,10 @@ struct StageCardWithGrid: View {
     let onTap: () -> Void
     
     @State private var showingGrid = false
+    @State private var selectedPracticeMode: String = GameViewModel.PracticeMode.visual.rawValue
     
     var progress: (completed: Int, total: Int) {
-        progressTracker.getStageProgress(islandId: islandId, stageIndex: index)
+        progressTracker.getStageProgress(islandId: islandId, stageIndex: index, practiceMode: selectedPracticeMode)
     }
     
     var body: some View {
@@ -1465,7 +1555,8 @@ struct StageCardWithGrid: View {
                 stage: stage,
                 islandId: islandId,
                 stageIndex: index,
-                progressTracker: progressTracker
+                progressTracker: progressTracker,
+                selectedPracticeMode: $selectedPracticeMode
             )
         }
     }
@@ -1479,6 +1570,7 @@ struct ProblemGridView: View {
     let stageIndex: Int
     let progressTracker: ProgressTracker
     
+    @Binding var selectedPracticeMode: String
     @Environment(\.dismiss) private var dismiss
     
     let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
@@ -1510,6 +1602,15 @@ struct ProblemGridView: View {
                     }
                     .padding()
                     
+                    // Practice Mode Tabs
+                    Picker("Practice Mode", selection: $selectedPracticeMode) {
+                        Text("Visual").tag(GameViewModel.PracticeMode.visual.rawValue)
+                        Text("Mental").tag(GameViewModel.PracticeMode.mental.rawValue)
+                        Text("Finger").tag(GameViewModel.PracticeMode.finger.rawValue)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+                    
                     // 5x5 Problem Grid
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(1...25, id: \.self) { problemNumber in
@@ -1518,7 +1619,8 @@ struct ProblemGridView: View {
                                 completion: progressTracker.getProblemCompletion(
                                     islandId: islandId,
                                     stageIndex: stageIndex,
-                                    problemNumber: problemNumber
+                                    problemNumber: problemNumber,
+                                    practiceMode: selectedPracticeMode
                                 )
                             )
                         }
@@ -1760,7 +1862,7 @@ struct iPadPlayingStateView: View {
             VStack(spacing: 20) {
                 HStack(spacing: 15) {
                     // In mental mode, hide the question text
-                    if gameViewModel.practiceMode == .visual {
+                    if gameViewModel.practiceMode == .visual || gameViewModel.practiceMode == .finger {
                         Text(gameViewModel.currentQuestion)
                             .font(.system(size: 50, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
@@ -1784,14 +1886,14 @@ struct iPadPlayingStateView: View {
                     }) {
                         Image(systemName: "speaker.wave.2.fill")
                             .font(.largeTitle)
-                            .foregroundColor(gameViewModel.practiceMode == .mental ? .purple : .blue)
+                            .foregroundColor(gameViewModel.modeColor)
                             .padding(16)
-                            .background((gameViewModel.practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                            .background(gameViewModel.modeColor.opacity(0.1))
                             .cornerRadius(12)
                     }
                 }
                 
-                if gameViewModel.practiceMode == .visual {
+                if gameViewModel.practiceMode == .visual || gameViewModel.practiceMode == .finger {
                     Text("= ?")
                         .font(.system(size: 50, weight: .bold, design: .rounded))
                         .foregroundColor(.pink)
@@ -1804,11 +1906,43 @@ struct iPadPlayingStateView: View {
             .shadow(radius: 5)
             .padding(.horizontal)
             
-            // Interactive Abacus (only show in visual mode)
-            if gameViewModel.practiceMode == .visual {
-                InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
-                    .frame(height: 400)
-                    .padding(.horizontal)
+            // Interactive Abacus or Finger Theory display
+            if gameViewModel.practiceMode == .visual || gameViewModel.practiceMode == .finger {
+                VStack(spacing: 10) {
+                    if gameViewModel.practiceMode == .finger {
+                        // Finger theory mode - show visual hint
+                        HStack(spacing: 15) {
+                            Image(systemName: "hand.raised.fill")
+                                .font(.system(size: 80))
+                                .foregroundColor(.orange.opacity(0.3))
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Finger Theory Mode")
+                                    .font(.largeTitle)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.orange)
+                                
+                                Text("Numbers < 100")
+                                    .font(.title2)
+                                    .foregroundColor(.secondary)
+                                
+                                Text("Use your fingers to visualize!")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.orange.opacity(0.1))
+                        )
+                    }
+                    
+                    InteractiveAbacusView(viewModel: gameViewModel.abacusViewModel)
+                        .frame(height: 400)
+                }
+                .padding(.horizontal)
             } else {
                 // Mental mode - show a brain animation or placeholder
                 VStack(spacing: 20) {
@@ -1827,8 +1961,8 @@ struct iPadPlayingStateView: View {
             
             // Answer input text field
             VStack(spacing: 15) {
-                if gameViewModel.practiceMode == .mental {
-                    // Mental mode: user types directly
+                if gameViewModel.practiceMode == .mental || gameViewModel.practiceMode == .finger {
+                    // Mental/Finger mode: user types directly
                     TextField("Type your answer", text: $gameViewModel.userAnswer)
                         .font(.system(size: 40, weight: .bold, design: .rounded))
                         .multilineTextAlignment(.center)
@@ -1880,7 +2014,7 @@ struct iPadPlayingStateView: View {
                     .padding()
                     .background(
                         gameViewModel.lastAnswerCorrect && gameViewModel.feedback != nil ?
-                        Color.green : (gameViewModel.practiceMode == .mental ? Color.purple : Color.blue)
+                        Color.green : gameViewModel.modeColor
                     )
                     .cornerRadius(12)
                 }
@@ -1914,9 +2048,9 @@ struct iPadModeIndicator: View {
     
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: practiceMode == .mental ? "ear.fill" : "eye.fill")
+            Image(systemName: practiceMode.icon)
                 .font(.caption)
-            Text(practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+            Text(practiceMode.displayName)
                 .font(.caption)
                 .fontWeight(.bold)
         }
@@ -1924,13 +2058,13 @@ struct iPadModeIndicator: View {
         .padding(.vertical, 6)
         .background(
             Capsule()
-                .fill((practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                .fill(practiceMode.color.opacity(0.1))
         )
         .overlay(
             Capsule()
-                .stroke(practiceMode == .mental ? Color.purple : Color.blue, lineWidth: 1.5)
+                .stroke(practiceMode.color, lineWidth: 1.5)
         )
-        .foregroundColor(practiceMode == .mental ? .purple : .blue)
+        .foregroundColor(practiceMode.color)
     }
 }
 
@@ -1940,9 +2074,9 @@ struct iPadModeIndicatorWithProblem: View {
     
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: practiceMode == .mental ? "ear.fill" : "eye.fill")
+            Image(systemName: practiceMode.icon)
                 .font(.caption)
-            Text(practiceMode == .mental ? "Mental Mode" : "Visual Mode")
+            Text(practiceMode.displayName)
                 .font(.caption)
                 .fontWeight(.bold)
             
@@ -1956,13 +2090,13 @@ struct iPadModeIndicatorWithProblem: View {
         .padding(.vertical, 6)
         .background(
             Capsule()
-                .fill((practiceMode == .mental ? Color.purple : Color.blue).opacity(0.1))
+                .fill(practiceMode.color.opacity(0.1))
         )
         .overlay(
             Capsule()
-                .stroke(practiceMode == .mental ? Color.purple : Color.blue, lineWidth: 1.5)
+                .stroke(practiceMode.color, lineWidth: 1.5)
         )
-        .foregroundColor(practiceMode == .mental ? .purple : .blue)
+        .foregroundColor(practiceMode.color)
     }
 }
 
