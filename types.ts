@@ -10,7 +10,8 @@ export enum Operation {
   READING = 'reading',
   GRAMMAR = 'grammar',
   VOCAB = 'vocabulary',
-  WRITING = 'creative_writing'
+  WRITING = 'creative_writing',
+  CODING = 'coding'
 }
 
 export interface LevelConfig {
@@ -40,9 +41,15 @@ export interface Problem {
   operation: Operation;
   index: number;
   levelId: number;
-  type: 'math' | 'english';
+  type: 'math' | 'english' | 'coding';
   hint?: string;
   options?: string[];
+  codingDetails?: {
+    title: string;
+    concepts: string;
+    projectId?: string;
+    url?: string;
+  };
 }
 
 // Backward compatibility alias (deprecated)

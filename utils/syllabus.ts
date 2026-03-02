@@ -1,5 +1,6 @@
 
 import { LevelConfig, Operation, MathProblem, Problem, StageConfig } from '../types';
+import { CODING_CONTENT } from './codingContent';
 import { READING_CONTENT, GRAMMAR_CONTENT, VOCAB_CONTENT, WRITING_CONTENT } from './englishContent';
 
 export const JUNIOR_SYLLABUS: LevelConfig[] = [
@@ -368,7 +369,23 @@ export const ENGLISH_SYLLABUS: LevelConfig[] = [
   }
 ];
 
-export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS, ...ENGLISH_SYLLABUS];
+
+export const CODING_SYLLABUS: LevelConfig[] = CODING_CONTENT.map((item, idx) => ({
+  id: 201 + idx,
+  label: `Level ${idx + 1}`,
+  title: item.title,
+  abacusDesc: item.concepts,
+  mentalDesc: "Scratch Project",
+  operations: [Operation.CODING],
+  digitRange: [1, 1],
+  decimalPlaces: 0,
+  allowNegative: false,
+  stages: [
+    { name: "Project", operations: [Operation.CODING], range: [1, 100], description: "Complete the project" }
+  ]
+}));
+
+export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS, ...ENGLISH_SYLLABUS, ...CODING_SYLLABUS];
 
 const mulberry32 = (seed: number) => {
   return () => {
@@ -389,7 +406,8 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
   const nextRand = mulberry32(initialSeed);
   
   const op = stage.operations[Math.floor(nextRand() * stage.operations.length)];
-  let num1 = 0, num2 = 0, answer = 0, expression = "";
+  let num1 = 0, num2 = 0, answer: number | string = 0, expression = "";
+  let codingDetails;
 
   switch (op) {
     case Operation.ADD:
@@ -587,6 +605,17 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
       break;
     }
 
+
+    case Operation.CODING: {
+      const codingItem = CODING_CONTENT[level.id - 201];
+      if (codingItem) {
+        expression = codingItem.title;
+        answer = "done";
+        codingDetails = codingItem;
+      }
+      break;
+    }
+
     default: {
       // Fallback to a simple addition problem if operation is not handled
       num1 = Math.floor(seededRandom(seed + 1) * 9) + 1;
@@ -604,6 +633,7 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     operation: op,
     index,
     levelId: level.id,
-    type: (typeof answer === 'string') ? 'english' : 'math'
+    type: (op === Operation.CODING) ? 'coding' : (typeof answer === 'string') ? 'english' : 'math',
+    codingDetails
   };
 };
