@@ -17,6 +17,16 @@ const MapMode: React.FC<MapModeProps> = ({
 }) => {
   const completedSet = useMemo(() => new Set(levelProgress.completedIndices), [levelProgress.completedIndices]);
 
+  const stageIndices = useMemo(() => {
+    return currentLevel.stages.map(stage => {
+      const indices = [];
+      for (let i = stage.range[0]; i <= stage.range[1]; i++) {
+        indices.push(i);
+      }
+      return indices;
+    });
+  }, [currentLevel.stages]);
+
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500">
       <div className="mb-8 md:mb-12 text-center">
@@ -45,8 +55,7 @@ const MapMode: React.FC<MapModeProps> = ({
             </div>
 
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 gap-3 md:gap-4">
-              {Array.from({ length: stage.range[1] - stage.range[0] + 1 }).map((_, i) => {
-                const idx = stage.range[0] + i;
+              {stageIndices[sIdx].map((idx) => {
                 const isCompleted = completedSet.has(idx);
                 return (
                   <button
@@ -60,7 +69,16 @@ const MapMode: React.FC<MapModeProps> = ({
                             : 'bg-white border-sky-100 text-sky-200 hover:border-pink-300 hover:text-pink-500 hover:rotate-6'
                     }`}
                   >
-                    {isCompleted ? <PartyPopper className="w-5 h-5 md:w-7 md:h-7" /> : idx}
+                    {isCompleted ? (
+                      <div className="flex flex-col items-center leading-none">
+                        <PartyPopper className="w-4 h-4 md:w-5 md:h-5" />
+                        {levelProgress.completionDates?.[idx] && (
+                          <span className="text-[8px] md:text-[10px] font-bold opacity-80 mt-0.5">
+                            {levelProgress.completionDates[idx]}
+                          </span>
+                        )}
+                      </div>
+                    ) : idx}
                   </button>
                 );
               })}

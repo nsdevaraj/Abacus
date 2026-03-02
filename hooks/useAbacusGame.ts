@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, CODING_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
 import { Problem, UserProgress, DailyLog, AppMode } from '../types';
 import { useDatabase } from './useDatabase';
+import { STORAGE_KEYS } from '../utils/constants';
 
 export const useAbacusGame = () => {
   const db = useDatabase();
@@ -11,6 +12,7 @@ export const useAbacusGame = () => {
   const getDefaultProgress = () => ALL_LEVELS.map(l => ({
     levelId: l.id,
     completedIndices: [],
+    completionDates: {} as Record<number, string>,
     coins: 0,
     streak: 0
   }));
@@ -27,7 +29,7 @@ export const useAbacusGame = () => {
   const [practiceType, setPracticeType] = useState<'visual' | 'mental'>('visual');
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('abacus_dark_mode') === 'true';
+      return localStorage.getItem(STORAGE_KEYS.DARK_MODE) === 'true';
     } catch {
       return false;
     }
@@ -35,7 +37,7 @@ export const useAbacusGame = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('abacus_dark_mode', String(darkMode));
+      localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(darkMode));
     } catch {}
   }, [darkMode]);
   
@@ -81,21 +83,26 @@ export const useAbacusGame = () => {
         const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior' | 'english' | 'coding');
         setLearningPath(savedPath);
 
-        const savedProgress = getOrMigrate('abacus_progress', null);
+        const savedProgress = getOrMigrate(STORAGE_KEYS.PROGRESS, null);
         if (savedProgress) {
           if (savedProgress.length < ALL_LEVELS.length) {
             setProgress(ALL_LEVELS.map(l => {
               const existing = savedProgress.find((p: any) => p.levelId === l.id);
-              return existing || { levelId: l.id, completedIndices: [], coins: 0, streak: 0 };
+              return existing
+                ? { completionDates: {}, ...existing }
+                : { levelId: l.id, completedIndices: [], completionDates: {}, coins: 0, streak: 0 };
             }));
           } else {
-            setProgress(savedProgress);
+            setProgress(savedProgress.map((p: any) => ({
+              completionDates: {},
+              ...p,
+            })));
           }
         }
 
-        setDailyLogs(getOrMigrate('abacus_daily_logs', []));
-        setGlobalCoins(getOrMigrate('abacus_coins', 0, parseInt));
-        setGlobalStreak(getOrMigrate('abacus_streak', 0, parseInt));
+        setDailyLogs(getOrMigrate(STORAGE_KEYS.DAILY_LOGS, []));
+        setGlobalCoins(getOrMigrate(STORAGE_KEYS.COINS, 0, parseInt));
+        setGlobalStreak(getOrMigrate(STORAGE_KEYS.STREAK, 0, parseInt));
 
       } catch (err) {
         console.error("Failed to load data from DB", err);
@@ -109,7 +116,7 @@ export const useAbacusGame = () => {
   // Sync state to DB
   useEffect(() => {
     if (loading) return;
-    db.setItem('abacus_learning_path', learningPath);
+    db.setItem(STORAGE_KEYS.LEARNING_PATH, learningPath);
 
     // Validate currentLevelId against new learning path
     const validIds = currentSyllabus.map(l => l.id);
@@ -123,10 +130,10 @@ export const useAbacusGame = () => {
 
   useEffect(() => {
     if (loading) return;
-    db.setItem('abacus_progress', JSON.stringify(progress));
-    db.setItem('abacus_coins', globalCoins.toString());
-    db.setItem('abacus_streak', globalStreak.toString());
-    db.setItem('abacus_daily_logs', JSON.stringify(dailyLogs));
+    db.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
+    db.setItem(STORAGE_KEYS.COINS, globalCoins.toString());
+    db.setItem(STORAGE_KEYS.STREAK, globalStreak.toString());
+    db.setItem(STORAGE_KEYS.DAILY_LOGS, JSON.stringify(dailyLogs));
   }, [progress, globalCoins, globalStreak, dailyLogs, loading]);
 
   // --- Offline Audio Synthesis ---
@@ -216,11 +223,11 @@ export const useAbacusGame = () => {
     if (window.confirm("Are you sure you want to delete all your hard-earned coins and progress? This cannot be undone!")) {
       await db.clear();
       // Also clear localStorage just in case
-      localStorage.removeItem('abacus_progress');
-      localStorage.removeItem('abacus_coins');
-      localStorage.removeItem('abacus_streak');
-      localStorage.removeItem('abacus_daily_logs');
-      localStorage.removeItem('abacus_learning_path');
+      localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+      localStorage.removeItem(STORAGE_KEYS.COINS);
+      localStorage.removeItem(STORAGE_KEYS.STREAK);
+      localStorage.removeItem(STORAGE_KEYS.DAILY_LOGS);
+      localStorage.removeItem(STORAGE_KEYS.LEARNING_PATH);
       
       setProgress(getDefaultProgress());
       setDailyLogs([]);
@@ -272,9 +279,15 @@ export const useAbacusGame = () => {
       if (!levelProgress.completedIndices.includes(problem.index)) {
         const bonus = globalStreak > 5 ? 20 : 10;
         setGlobalCoins(c => c + bonus);
-        setProgress(prev => prev.map(p => 
-          p.levelId === currentLevelId 
-            ? { ...p, completedIndices: [...p.completedIndices, problem.index] }
+        const now = new Date();
+        const dateStr = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+        setProgress(prev => prev.map(p =>
+          p.levelId === currentLevelId
+            ? {
+                ...p,
+                completedIndices: [...p.completedIndices, problem.index],
+                completionDates: { ...p.completionDates, [problem.index]: dateStr },
+              }
             : p
         ));
       }
