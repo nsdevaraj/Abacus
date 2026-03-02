@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  ChevronLeft, Volume2, PartyPopper, Calculator, Brain, CheckCircle2, XCircle, ArrowRight, RefreshCw, Ear
+  ChevronLeft, Volume2, PartyPopper, Calculator, Brain, CheckCircle2, XCircle, ArrowRight, RefreshCw, ExternalLink, Code, Ear
 } from 'lucide-react';
 import Abacus from './Abacus';
 import { Problem, LevelConfig } from '../types';
@@ -78,10 +78,41 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
            </div>
          )}
 
-         <div className="max-w-7xl w-full space-y-6 md:space-y-12 lg:landscape:space-y-0 lg:landscape:grid lg:landscape:grid-cols-[1fr_320px] lg:landscape:gap-8 lg:landscape:items-start">
+         <div className="max-w-5xl w-full space-y-6 md:space-y-12">
+            
+            {problem.type === 'coding' ? (
+                <div className="flex flex-col items-center justify-center space-y-8 animate-in zoom-in-50 duration-500">
+                    <div className="bg-orange-50 p-8 md:p-12 rounded-[2.5rem] border-4 border-orange-100 shadow-xl max-w-4xl w-full text-center">
+                        <div className="w-20 h-20 bg-orange-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-orange-500 shadow-inner">
+                             <Code className="w-10 h-10" />
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-black text-orange-900 mb-4">{problem.expression}</h2>
+                        <p className="text-xl text-orange-700 font-medium mb-8">{problem.codingDetails?.concepts}</p>
 
-            {practiceType === 'visual' ? (
-                <div className="space-y-4 md:space-y-8 lg:landscape:space-y-4">
+                        <div className="flex flex-col md:flex-row gap-4 justify-center">
+                            <a
+                                href={problem.codingDetails?.url || "https://scratch.mit.edu/create"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-4 rounded-2xl text-xl transition-all hover:scale-105 shadow-lg transform hover:-translate-y-1"
+                            >
+                                <ExternalLink className="w-6 h-6" /> Open Scratch
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-[2rem] border-4 border-sky-50 shadow-lg max-w-2xl w-full text-center">
+                        <p className="text-sky-600 font-medium mb-4">Did you finish the project?</p>
+                        <button
+                             onClick={() => setUserAnswer('done')}
+                             className={`px-8 py-3 rounded-xl font-black text-lg transition-all transform hover:scale-105 active:scale-95 ${userAnswer === 'done' ? 'bg-green-500 text-white shadow-green-200 shadow-lg' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                        >
+                             {userAnswer === 'done' ? 'Ready to Submit!' : 'Yes, I finished it!'}
+                        </button>
+                    </div>
+                </div>
+            ) : practiceType === 'visual' ? (
+                <>
                   {/* Visual Mode: Problem Display */}
                   <div className="text-center animate-in zoom-in-50 duration-500">
                       <div className={`${problem.type === 'english' ? 'text-2xl md:text-4xl lg:landscape:text-2xl leading-snug max-w-4xl mx-auto py-4 whitespace-pre-wrap' : 'text-6xl sm:text-8xl md:text-[11rem] lg:landscape:text-7xl leading-none'} font-black text-sky-900 tracking-tighter drop-shadow-xl select-none`}>
@@ -124,9 +155,9 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
             )}
 
             {/* Answer Input */}
-            <div className="max-w-xl mx-auto lg:landscape:max-w-none lg:landscape:mx-0 space-y-6 md:space-y-10 lg:landscape:space-y-4 lg:landscape:sticky lg:landscape:top-0">
-              <div className="relative group">
-                <input
+            <div className="max-w-xl mx-auto space-y-6 md:space-y-10">
+              {problem.type !== 'coding' && <div className="relative group">
+                <input 
                   type={problem.type === 'english' ? "text" : "number"}
                   step="any"
                   value={userAnswer}
@@ -143,7 +174,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                 {feedback === 'incorrect' && <XCircle className="absolute -right-2 md:-right-20 lg:landscape:-right-2 top-1/2 -translate-y-1/2 text-pink-500 w-10 h-10 md:w-16 md:h-16 lg:landscape:w-10 lg:landscape:h-10 animate-shake" />}
               </div>
 
-              <div className="flex gap-3 md:gap-6 lg:landscape:gap-3">
+              } <div className="flex gap-3 md:gap-6">
                 {feedback === 'correct' ? (
                   <button
                     onClick={handleNextProblem}

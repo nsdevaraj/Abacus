@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, CODING_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
 import { Problem, UserProgress, DailyLog, AppMode } from '../types';
 import { useDatabase } from './useDatabase';
 import { STORAGE_KEYS } from '../utils/constants';
@@ -17,7 +17,7 @@ export const useAbacusGame = () => {
     streak: 0
   }));
 
-  const [learningPath, setLearningPath] = useState<'junior' | 'senior' | 'english'>('junior');
+  const [learningPath, setLearningPath] = useState<'junior' | 'senior' | 'english' | 'coding'>('junior');
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
   const [masterSeed, setMasterSeed] = useState<number>(0);
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -57,7 +57,7 @@ export const useAbacusGame = () => {
   const [globalCoins, setGlobalCoins] = useState<number>(0);
   const [globalStreak, setGlobalStreak] = useState<number>(0);
 
-  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : ENGLISH_SYLLABUS;
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : learningPath === 'english' ? ENGLISH_SYLLABUS : CODING_SYLLABUS;
 
   // Initial Load & Migration
   useEffect(() => {
@@ -80,7 +80,7 @@ export const useAbacusGame = () => {
           return defaultVal;
         };
 
-        const savedPath = getOrMigrate(STORAGE_KEYS.LEARNING_PATH, 'junior', (v) => v as 'junior' | 'senior' | 'english');
+        const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior' | 'english' | 'coding');
         setLearningPath(savedPath);
 
         const savedProgress = getOrMigrate(STORAGE_KEYS.PROGRESS, null);

@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
-import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, CODING_SYLLABUS } from '../utils/syllabus';
 import { UserProgress, AppMode } from '../types';
 
 interface SidebarProps {
@@ -16,8 +16,8 @@ interface SidebarProps {
   setCurrentLevelId: (id: number) => void;
   setMode: (mode: AppMode) => void;
   handleResetAll: () => void;
-  learningPath: 'junior' | 'senior' | 'english';
-  setLearningPath: (path: 'junior' | 'senior' | 'english') => void;
+  learningPath: 'junior' | 'senior' | 'english' | 'coding';
+  setLearningPath: (path: 'junior' | 'senior' | 'english' | 'coding') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   learningPath,
   setLearningPath
 }) => {
-  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : ENGLISH_SYLLABUS;
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : learningPath === 'english' ? ENGLISH_SYLLABUS : CODING_SYLLABUS;
 
   return (
     <aside className={`
@@ -93,6 +93,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }`}
             >
                 English
+            </button>
+            <button
+                onClick={() => setLearningPath('coding')}
+                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
+                    learningPath === 'coding'
+                    ? 'bg-white text-orange-500 shadow-sm scale-100'
+                    : 'text-sky-400 hover:text-orange-400'
+                }`}
+            >
+                Coding
             </button>
         </div>
         
