@@ -17,6 +17,16 @@ const MapMode: React.FC<MapModeProps> = ({
 }) => {
   const completedSet = useMemo(() => new Set(levelProgress.completedIndices), [levelProgress.completedIndices]);
 
+  const stageIndices = useMemo(() => {
+    return currentLevel.stages.map(stage => {
+      const indices = [];
+      for (let i = stage.range[0]; i <= stage.range[1]; i++) {
+        indices.push(i);
+      }
+      return indices;
+    });
+  }, [currentLevel.stages]);
+
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500">
       <div className="mb-8 md:mb-12 text-center">
@@ -45,8 +55,7 @@ const MapMode: React.FC<MapModeProps> = ({
             </div>
 
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 gap-3 md:gap-4">
-              {Array.from({ length: stage.range[1] - stage.range[0] + 1 }).map((_, i) => {
-                const idx = stage.range[0] + i;
+              {stageIndices[sIdx].map((idx) => {
                 const isCompleted = completedSet.has(idx);
                 return (
                   <button
