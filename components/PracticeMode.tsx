@@ -126,7 +126,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                       <Abacus interactive={true} onChange={setAbacusValue} columns={11} />
                   </div>
                   )}
-                </div>
+                </>
             ) : (
                 /* Mental Mode: Audio Only */
                 <div className="flex flex-col items-center justify-center py-4 md:py-10 lg:landscape:py-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
