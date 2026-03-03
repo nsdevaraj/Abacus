@@ -208,7 +208,9 @@ export const useAbacusGame = () => {
   };
 
   const handleShuffle = () => {
-    const newSeed = Math.floor(Math.random() * 1000000);
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    const newSeed = array[0] % 1000000;
     setMasterSeed(newSeed);
     if (mode === 'practice' && problem) {
       const prob = getProblemForIndex(currentLevel, problem.index, newSeed);
