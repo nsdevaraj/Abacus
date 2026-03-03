@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
@@ -35,6 +35,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   setLearningPath
 }) => {
   const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : learningPath === 'english' ? ENGLISH_SYLLABUS : CODING_SYLLABUS;
+
+  const progressMap = useMemo(() => {
+    const map = new Map<number, UserProgress>();
+    for (const item of progress) {
+      map.set(item.levelId, item);
+    }
+    return map;
+  }, [progress]);
 
   return (
     <aside className={`
@@ -142,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {currentSyllabus.map((level) => {
-          const p = progress.find(item => item.levelId === level.id);
+          const p = progressMap.get(level.id);
           const completion = p ? p.completedIndices.length : 0;
 
           return (
