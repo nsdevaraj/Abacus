@@ -125,7 +125,7 @@ export const useAbacusGame = () => {
     }
   }, [learningPath, currentLevelId, currentSyllabus, loading]);
 
-  const currentLevel = ALL_LEVELS.find(l => l.id === currentLevelId) || ALL_LEVELS[0];
+  const currentLevel = useMemo(() => ALL_LEVELS.find(l => l.id === currentLevelId) || ALL_LEVELS[0], [currentLevelId]);
   const levelProgress = useMemo(() => progress.find(p => p.levelId === currentLevelId) || progress[0], [progress, currentLevelId]);
 
   useEffect(() => {
