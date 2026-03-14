@@ -67,8 +67,6 @@ const STORAGE_BACKEND =
 const storageApi: StorageApi =
   STORAGE_BACKEND === 'localstorage' ? localStorageAdapter : sqliteAdapter;
 
-console.log(`[Storage] Using ${STORAGE_BACKEND} backend`);
-
 export const useDatabase = (): StorageApi => {
   return storageApi;
 };
