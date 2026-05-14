@@ -1,13 +1,11 @@
 import React from 'react';
-import { Cloud, Rocket, Star } from 'lucide-react';
 import { useAbacusGame } from './hooks/useAbacusGame';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MapMode from './components/MapMode';
 import LearnMode from './components/LearnMode';
 import PracticeMode from './components/PracticeMode';
-import CalendarMode from './components/CalendarMode';
-import CoursesMode from './components/CoursesMode';
+import CalendarMode from './components/CalendarMode'; 
 import ProfileMode from './components/ProfileMode';
 import BottomNav from './components/BottomNav';
 
@@ -16,24 +14,23 @@ const App = () => {
 
   if (state.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sky-50 text-sky-600 font-bold text-xl">
+      <div className="min-h-screen flex items-center justify-center text-indigo-300 font-semibold text-base">
         <div className="flex flex-col items-center gap-4">
-           <div className="w-12 h-12 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin"></div>
-           Loading your abacus adventure...
+           <div className="w-10 h-10 border-4 border-slate-700 border-t-indigo-400 rounded-full animate-spin"></div>
+           Loading your abacus adventure…
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen flex flex-col 2xl:flex-row text-gray-800 font-sans bg-sky-50 dark:bg-gray-900 overflow-hidden relative ${state.darkMode ? 'dark' : ''}`}>
-      
-      {/* Playful Floating Elements Background */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
-        <Cloud className="absolute top-10 left-10 w-24 h-24 text-white" />
-        <Cloud className="absolute top-40 right-20 w-32 h-32 text-white" />
-        <Rocket className="absolute bottom-20 left-1/4 w-16 h-16 text-sky-200 -rotate-45" />
-        <Star className="absolute top-1/2 right-1/3 w-12 h-12 text-yellow-200 animate-pulse" />
+    <div className="min-h-screen flex flex-col 2xl:flex-row text-slate-800 font-sans dark:text-slate-100 overflow-hidden relative">
+
+      {/* Subtle decorative background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-indigo-300/25 dark:bg-indigo-500/10 blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-pink-300/20 dark:bg-pink-500/10 blur-3xl" />
+        <div className="absolute -bottom-40 left-1/4 w-[26rem] h-[26rem] rounded-full bg-amber-200/25 dark:bg-amber-400/10 blur-3xl" />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -60,7 +57,7 @@ const App = () => {
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 w-full">
-        {!['courses', 'profile'].includes(state.mode) && (
+        {!['profile'].includes(state.mode) && (
           <Header
             setMobileMenuOpen={actions.setMobileMenuOpen}
             currentLevel={state.currentLevel}
@@ -94,12 +91,7 @@ const App = () => {
 
           {state.mode === 'calendar' && (
             <CalendarMode logs={state.dailyLogs} />
-          )}
-
-          {state.mode === 'courses' && (
-            <CoursesMode />
-          )}
-
+          )} 
           {state.mode === 'profile' && (
             <ProfileMode
               darkMode={state.darkMode}

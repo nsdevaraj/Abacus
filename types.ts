@@ -7,10 +7,6 @@ export enum Operation {
   FRACTION = 'fractions',
   PERCENT = 'percentage',
   BODMAS = 'bodmas',
-  READING = 'reading',
-  GRAMMAR = 'grammar',
-  VOCAB = 'vocabulary',
-  WRITING = 'creative_writing',
   CODING = 'coding'
 }
 
@@ -36,19 +32,26 @@ export interface StageConfig {
 
 export interface Problem {
   id: string;
-  expression: string; // For English: The question text
+  expression: string;
   answer: number | string;
   operation: Operation;
   index: number;
   levelId: number;
-  type: 'math' | 'english' | 'coding';
+  type: 'math' | 'coding';
   hint?: string;
   options?: string[];
   codingDetails?: {
     title: string;
-    concepts: string;
+    concepts: string;       // Level summary / Scratch block categories used
     projectId?: string;
     url?: string;
+    // New story-based fields for the Scratch curriculum
+    scenario?: string;      // The mission / story description
+    category?: string;      // Primary Scratch block category for this story
+    blocks?: string[];      // Suggested Scratch blocks the learner should use
+    hints?: string[];       // Progressive hints, revealed one at a time
+    stageName?: string;     // Stage name within the level
+    levelTitle?: string;    // Level title
   };
 }
 
@@ -69,4 +72,4 @@ export interface DailyLog {
   lastLevelId: number;
 }
 
-export type AppMode = 'map' | 'learn' | 'practice' | 'calendar' | 'courses' | 'profile';
+export type AppMode = 'map' | 'learn' | 'practice' | 'calendar' | 'profile';

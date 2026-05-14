@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { 
   X, Trophy, Coins, Flame, Shuffle, Sparkles, Trash2, Calendar
 } from 'lucide-react';
-import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, CODING_SYLLABUS } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, CODING_SYLLABUS } from '../utils/syllabus';
 import { UserProgress, AppMode } from '../types';
 
 interface SidebarProps {
@@ -16,8 +16,8 @@ interface SidebarProps {
   setCurrentLevelId: (id: number) => void;
   setMode: (mode: AppMode) => void;
   handleResetAll: () => void;
-  learningPath: 'junior' | 'senior' | 'english' | 'coding';
-  setLearningPath: (path: 'junior' | 'senior' | 'english' | 'coding') => void;
+  learningPath: 'junior' | 'senior' | 'coding';
+  setLearningPath: (path: 'junior' | 'senior' | 'coding') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   learningPath,
   setLearningPath
 }) => {
-  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : learningPath === 'english' ? ENGLISH_SYLLABUS : CODING_SYLLABUS;
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : CODING_SYLLABUS;
 
   const progressMap = useMemo(() => {
     const map = new Map<number, UserProgress>();
@@ -47,102 +47,93 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`
         fixed 2xl:relative inset-y-0 left-0 z-40
-        w-[45vw] 2xl:w-80 
-        bg-white/95 2xl:bg-white/90 backdrop-blur-md 
-        border-r border-sky-100 flex flex-col shadow-2xl 2xl:shadow-xl 
+        w-[80vw] max-w-sm 2xl:w-80
+        bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl
+        border-r border-slate-200/70 dark:border-slate-800 flex flex-col shadow-2xl 2xl:shadow-sm
         h-screen shrink-0 transition-transform duration-300 ease-out
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full 2xl:translate-x-0'}
     `}>
-      <div className="p-6 md:p-8 border-b border-sky-50 flex flex-col items-center gap-4 md:gap-6 relative">
+      <div className="px-6 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6 border-b border-slate-200/70 dark:border-slate-800 flex flex-col items-center gap-5 relative">
         {/* Mobile Close Button */}
-        <button 
+        <button
           onClick={() => setMobileMenuOpen(false)}
-          className="absolute top-4 right-4 p-2 bg-sky-50 rounded-full text-sky-400 2xl:hidden hover:bg-sky-100"
+          className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 2xl:hidden transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-2 rounded-2xl shadow-lg">
-            <Trophy className="w-8 h-8 text-white" />
+        <div className="flex items-center gap-3 self-start">
+          <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-2.5 rounded-2xl shadow-md shadow-indigo-500/30">
+            <Trophy className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-black text-sky-900 tracking-tight">
-            Abacus<span className="text-pink-500">Fun</span>
-          </h1>
+          <div className="flex flex-col leading-tight">
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Abacus<span className="text-indigo-600">Fun</span>
+            </h1>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Master Academy</span>
+          </div>
         </div>
 
-        <div className="w-full flex p-1 bg-sky-100/50 rounded-2xl">
+        <div className="w-full flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
             <button
                 onClick={() => setLearningPath('junior')}
-                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
                     learningPath === 'junior'
-                    ? 'bg-white text-sky-600 shadow-sm scale-100'
-                    : 'text-sky-400 hover:text-sky-600'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
             >
                 Junior
             </button>
             <button
                 onClick={() => setLearningPath('senior')}
-                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
                     learningPath === 'senior'
-                    ? 'bg-white text-pink-500 shadow-sm scale-100'
-                    : 'text-sky-400 hover:text-pink-400'
+                    ? 'bg-white dark:bg-slate-700 text-pink-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
             >
                 Senior
             </button>
             <button
-                onClick={() => setLearningPath('english')}
-                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
-                    learningPath === 'english'
-                    ? 'bg-white text-emerald-500 shadow-sm scale-100'
-                    : 'text-sky-400 hover:text-emerald-400'
-                }`}
-            >
-                English
-            </button>
-            <button
                 onClick={() => setLearningPath('coding')}
-                className={`flex-1 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
                     learningPath === 'coding'
-                    ? 'bg-white text-orange-500 shadow-sm scale-100'
-                    : 'text-sky-400 hover:text-orange-400'
+                    ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
             >
                 Coding
             </button>
         </div>
-        
-        <div className="flex items-center gap-4 w-full">
-          <div className="flex-1 flex items-center justify-center gap-2 bg-yellow-100 px-3 py-2 rounded-2xl text-yellow-700 font-black border-2 border-yellow-200 shadow-sm">
-            <Coins className="w-5 h-5 text-yellow-500" /> {globalCoins}
+
+        <div className="flex items-center gap-3 w-full">
+          <div className="flex-1 flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-xl text-amber-700 dark:text-amber-300 font-bold border border-amber-200/70 dark:border-amber-500/20">
+            <Coins className="w-4 h-4" /> {globalCoins}
           </div>
-          <div className="flex-1 flex items-center justify-center gap-2 bg-pink-100 px-3 py-2 rounded-2xl text-pink-700 font-black border-2 border-pink-200 shadow-sm">
-            <Flame className="w-5 h-5 text-pink-500" /> {globalStreak}
+          <div className="flex-1 flex items-center justify-center gap-2 bg-rose-50 dark:bg-rose-500/10 px-3 py-2 rounded-xl text-rose-700 dark:text-rose-300 font-bold border border-rose-200/70 dark:border-rose-500/20">
+            <Flame className="w-4 h-4" /> {globalStreak}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-6">
-        <div className="flex items-center justify-between px-4 mb-2">
-          <p className="text-[11px] font-black text-sky-300 uppercase tracking-widest">Adventure Map</p>
-        </div>
-        
-        <div className="px-2 space-y-2 mb-4">
-          <button 
+      <div className="flex-1 overflow-y-auto p-4 space-y-2.5 pb-6">
+        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.18em] px-2 pt-1 pb-2">Adventure Map</p>
+
+        <div className="space-y-2 mb-4">
+          <button
             onClick={() => {
               setMode('calendar');
               setMobileMenuOpen(false);
             }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-2xl border-2 border-emerald-100 transition-all font-black text-xs uppercase tracking-widest shadow-sm group mb-2"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-xl border border-emerald-200/70 dark:border-emerald-500/20 transition-colors font-semibold text-xs uppercase tracking-wider group"
           >
             <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
             Daily Log
           </button>
-          <button 
+          <button
             onClick={handleShuffle}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-2xl border-2 border-indigo-100 transition-all font-black text-xs uppercase tracking-widest shadow-sm group"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded-xl border border-indigo-200/70 dark:border-indigo-500/20 transition-colors font-semibold text-xs uppercase tracking-wider group"
           >
             <Shuffle className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
             Shuffle Quests
@@ -152,6 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {currentSyllabus.map((level) => {
           const p = progressMap.get(level.id);
           const completion = p ? p.completedIndices.length : 0;
+          const active = currentLevelId === level.id;
 
           return (
             <button
@@ -161,22 +153,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setMode('map');
                 setMobileMenuOpen(false);
               }}
-              className={`w-full text-left p-4 rounded-3xl transition-all duration-300 border-2 flex flex-col gap-1 relative overflow-hidden group ${
-                currentLevelId === level.id
-                  ? 'bg-sky-500 border-sky-600 text-white shadow-lg scale-[1.03]'
-                  : 'bg-white border-sky-50 hover:bg-sky-50 text-sky-900 shadow-sm hover:border-sky-100'
+              className={`w-full text-left p-3.5 rounded-2xl transition-all duration-200 border flex flex-col gap-1 relative overflow-hidden ${
+                active
+                  ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-indigo-700 text-white shadow-lg shadow-indigo-600/30'
+                  : 'bg-white dark:bg-slate-800/60 border-slate-200/70 dark:border-slate-700 hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100'
               }`}
             >
-              <div className="flex items-center justify-between relative z-10">
-                 <span className={`text-[10px] font-black uppercase tracking-widest ${currentLevelId === level.id ? 'text-sky-100' : 'text-sky-300'}`}>
+              <div className="flex items-center justify-between">
+                 <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${active ? 'text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>
                    {level.label || `Island ${level.id}`}
                  </span>
-                 {completion === 100 && <Sparkles className="w-4 h-4 text-yellow-300 animate-spin-slow" />}
+                 {completion === 100 && <Sparkles className={`w-4 h-4 ${active ? 'text-amber-200' : 'text-amber-500'} animate-spin-slow`} />}
               </div>
-              <h3 className="font-black text-sm z-10 leading-tight pr-4">{level.title}</h3>
-              <div className="w-full bg-black/10 h-2.5 rounded-full mt-2 overflow-hidden border border-black/5">
-                <div 
-                  className={`h-full transition-all duration-700 ease-out ${currentLevelId === level.id ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-pink-400'}`} 
+              <h3 className="font-semibold text-sm leading-snug pr-2">{level.title}</h3>
+              <div className={`w-full h-1.5 rounded-full mt-1.5 overflow-hidden ${active ? 'bg-white/20' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                <div
+                  className={`h-full transition-all duration-700 ease-out rounded-full ${active ? 'bg-white' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`}
                   style={{ width: `${completion}%` }}
                 />
               </div>
@@ -185,10 +177,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         })}
       </div>
 
-      <div className="p-4 border-t border-sky-50 bg-white/50 backdrop-blur-sm">
-        <button 
+      <div className="p-4 border-t border-slate-200/70 dark:border-slate-800">
+        <button
           onClick={handleResetAll}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl border-2 border-red-100 transition-all font-black text-[10px] uppercase tracking-widest shadow-sm group"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 rounded-xl border border-rose-200/70 dark:border-rose-500/20 transition-colors font-semibold text-[11px] uppercase tracking-wider group"
         >
           <Trash2 className="w-4 h-4 group-hover:animate-bounce" />
           Reset All Data

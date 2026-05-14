@@ -1,7 +1,6 @@
 
 import { LevelConfig, Operation, MathProblem, Problem, StageConfig } from '../types';
-import { CODING_CONTENT } from './codingContent';
-import { READING_CONTENT, GRAMMAR_CONTENT, VOCAB_CONTENT, WRITING_CONTENT } from './englishContent';
+import { CODING_LEVELS, flattenCodingLevel } from './codingContent';
 
 export const JUNIOR_SYLLABUS: LevelConfig[] = [
   {
@@ -314,78 +313,36 @@ export const SENIOR_SYLLABUS: LevelConfig[] = [
 ];
 
 
-export const ENGLISH_SYLLABUS: LevelConfig[] = [
-  {
-    id: 101,
-    label: "Level 1",
-    title: "Reading Comprehension",
-    abacusDesc: "Read the passage and answer the question.",
-    mentalDesc: "Critical reading and understanding.",
-    operations: [Operation.READING],
-    decimalPlaces: 0,
-    allowNegative: false,
-    stages: [
-      { name: "Reading", operations: [Operation.READING], range: [1, 100], description: "Comprehension passages" }
-    ]
-  },
-  {
-    id: 102,
-    label: "Level 2",
-    title: "Grammar Fundamentals",
-    abacusDesc: "Identify nouns, verbs, adjectives.",
-    mentalDesc: "Understanding language rules.",
-    operations: [Operation.GRAMMAR],
-    decimalPlaces: 0,
-    allowNegative: false,
-    stages: [
-      { name: "Grammar", operations: [Operation.GRAMMAR], range: [1, 100], description: "Parts of speech" }
-    ]
-  },
-  {
-    id: 103,
-    label: "Level 3",
-    title: "Vocabulary Expansion",
-    abacusDesc: "Synonyms, antonyms, and meanings.",
-    mentalDesc: "Expanding word power.",
-    operations: [Operation.VOCAB],
-    decimalPlaces: 0,
-    allowNegative: false,
-    stages: [
-      { name: "Vocabulary", operations: [Operation.VOCAB], range: [1, 100], description: "Word meanings" }
-    ]
-  },
-  {
-    id: 104,
-    label: "Level 4",
-    title: "Creative Writing",
-    abacusDesc: "Punctuation, spelling, and sentence structure.",
-    mentalDesc: "Writing correctness.",
-    operations: [Operation.WRITING],
-    decimalPlaces: 0,
-    allowNegative: false,
-    stages: [
-      { name: "Writing", operations: [Operation.WRITING], range: [1, 100], description: "Writing skills" }
-    ]
-  }
-];
+export const CODING_SYLLABUS: LevelConfig[] = CODING_LEVELS.map((level, idx) => {
+  // Build stages with consecutive index ranges (one quest per story).
+  let cursor = 1;
+  const stages: StageConfig[] = level.stages.map((stage) => {
+    const start = cursor;
+    const end = cursor + stage.stories.length - 1;
+    cursor = end + 1;
+    return {
+      name: stage.name,
+      operations: [Operation.CODING],
+      range: [start, end] as [number, number],
+      description: stage.description,
+    };
+  });
 
+  return {
+    id: 201 + idx,
+    label: `Level ${idx + 1}`,
+    title: level.title,
+    abacusDesc: level.summary,
+    mentalDesc: level.tagline,
+    operations: [Operation.CODING],
+    digitRange: [1, 1],
+    decimalPlaces: 0,
+    allowNegative: false,
+    stages,
+  };
+});
 
-export const CODING_SYLLABUS: LevelConfig[] = CODING_CONTENT.map((item, idx) => ({
-  id: 201 + idx,
-  label: `Level ${idx + 1}`,
-  title: item.title,
-  abacusDesc: item.concepts,
-  mentalDesc: "Scratch Project",
-  operations: [Operation.CODING],
-  digitRange: [1, 1],
-  decimalPlaces: 0,
-  allowNegative: false,
-  stages: [
-    { name: "Project", operations: [Operation.CODING], range: [1, 100], description: "Complete the project" }
-  ]
-}));
-
-export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS, ...ENGLISH_SYLLABUS, ...CODING_SYLLABUS];
+export const ALL_LEVELS = [...JUNIOR_SYLLABUS, ...SENIOR_SYLLABUS, ...CODING_SYLLABUS];
 
 const mulberry32 = (seed: number) => {
   return () => {
@@ -580,38 +537,27 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     }
 
 
-    case Operation.READING: {
-      const item = READING_CONTENT[index % READING_CONTENT.length];
-      expression = item.question;
-      answer = item.answer;
-      break;
-    }
-    case Operation.GRAMMAR: {
-      const item = GRAMMAR_CONTENT[index % GRAMMAR_CONTENT.length];
-      expression = item.question;
-      answer = item.answer;
-      break;
-    }
-    case Operation.VOCAB: {
-      const item = VOCAB_CONTENT[index % VOCAB_CONTENT.length];
-      expression = item.question;
-      answer = item.answer;
-      break;
-    }
-    case Operation.WRITING: {
-      const item = WRITING_CONTENT[index % WRITING_CONTENT.length];
-      expression = item.question;
-      answer = item.answer;
-      break;
-    }
-
-
     case Operation.CODING: {
-      const codingItem = CODING_CONTENT[level.id - 201];
-      if (codingItem) {
-        expression = codingItem.title;
+      const levelIndex = level.id - 201;
+      const stories = flattenCodingLevel(levelIndex);
+      // index is 1-based across all stages in the level.
+      const story = stories[index - 1];
+      if (story) {
+        expression = story.title;
         answer = "done";
-        codingDetails = codingItem;
+        const levelInfo = CODING_LEVELS[levelIndex];
+        const stageInfo = levelInfo.stages[story.stageIndex];
+        codingDetails = {
+          title: story.title,
+          concepts: story.category,
+          url: story.url,
+          scenario: story.scenario,
+          category: story.category,
+          blocks: story.blocks,
+          hints: story.hints,
+          stageName: stageInfo.name,
+          levelTitle: levelInfo.title,
+        };
       }
       break;
     }
@@ -633,7 +579,7 @@ export const getProblemForIndex = (level: LevelConfig, index: number, masterSeed
     operation: op,
     index,
     levelId: level.id,
-    type: (op === Operation.CODING) ? 'coding' : (typeof answer === 'string') ? 'english' : 'math',
+    type: (op === Operation.CODING) ? 'coding' : 'math',
     codingDetails
   };
 };

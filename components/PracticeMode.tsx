@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  ChevronLeft, Volume2, PartyPopper, Calculator, Brain, CheckCircle2, XCircle, ArrowRight, RefreshCw, ExternalLink, Code, Ear
+  ChevronLeft, Volume2, PartyPopper, Calculator, Brain, CheckCircle2, XCircle, ArrowRight, RefreshCw, Code, Ear, Lightbulb, Blocks, BookOpen
 } from 'lucide-react';
+import BlocklyEditor from './BlocklyEditor';
 import Abacus from './Abacus';
 import { Problem, LevelConfig } from '../types';
 
@@ -37,31 +38,32 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
   setFeedback
 }) => {
   return (
-    <div className="absolute inset-0 bg-white z-50 flex flex-col animate-in slide-in-from-right-12 duration-500">
-      <header className="px-4 py-4 md:px-10 md:py-8 flex items-center justify-between bg-sky-50 border-b-4 border-sky-100 shrink-0">
-         <button 
+    <div className="absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col animate-in slide-in-from-right-12 duration-500">
+      <header className="px-4 py-3 md:px-8 md:py-5 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800 shrink-0">
+         <button
           onClick={() => setMode('map')}
-          className="flex items-center gap-2 md:gap-3 text-sky-400 hover:text-pink-500 font-black text-sm md:text-lg transition-all transform hover:-translate-x-1"
+          className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300 font-semibold text-sm md:text-base transition-colors"
          >
-           <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" /> Back
+           <ChevronLeft className="w-5 h-5" /> Back
          </button>
          <div className="flex flex-col items-center">
-           <span className="text-[10px] md:text-[12px] uppercase font-black text-sky-300 tracking-[0.2em] mb-1">Quest {problem.index} / 100</span>
+           <span className="text-[10px] md:text-[11px] uppercase font-semibold text-slate-400 tracking-[0.18em] mb-1">Quest {problem.index} / 100</span>
            <div className="flex items-center gap-2">
-               <h2 className="text-sm md:text-lg font-black text-sky-900 px-3 py-1 md:px-4 md:py-1 bg-white rounded-full border border-sky-100 shadow-sm truncate max-w-[150px] md:max-w-none">{currentLevel.title}</h2>
+               <h2 className="text-sm md:text-base font-bold text-slate-900 dark:text-white px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full truncate max-w-[160px] md:max-w-none">{currentLevel.title}</h2>
                {practiceType === 'mental' && (
-                   <span className="bg-purple-100 text-purple-600 px-2 py-1 rounded-full text-xs font-black border border-purple-200 flex items-center gap-1">
+                   <span className="bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300 px-2 py-0.5 rounded-full text-xs font-semibold border border-violet-200/70 dark:border-violet-500/20 flex items-center gap-1">
                        <Brain className="w-3 h-3" /> Mental
                    </span>
                )}
            </div>
          </div>
          <div className="w-20 md:w-32 flex items-center justify-end">
-           <button 
+           <button
              onClick={() => explainQuestion(problem)}
-             className="p-2 md:p-3 rounded-2xl bg-white border-2 border-sky-100 shadow-sm text-sky-500 hover:text-pink-500 transition-all hover:scale-110 active:scale-95"
+             className="p-2 md:p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/15 dark:border-indigo-500/20 dark:text-indigo-300 transition-colors"
+             aria-label="Read question aloud"
            >
-             <Volume2 className="w-5 h-5 md:w-6 md:h-6" />
+             <Volume2 className="w-5 h-5" />
            </button>
          </div>
       </header>
@@ -81,51 +83,20 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
          <div className="max-w-5xl w-full space-y-6 md:space-y-12">
             
             {problem.type === 'coding' ? (
-                <div className="flex flex-col items-center justify-center space-y-8 animate-in zoom-in-50 duration-500">
-                    <div className="bg-orange-50 p-8 md:p-12 rounded-[2.5rem] border-4 border-orange-100 shadow-xl max-w-4xl w-full text-center">
-                        <div className="w-20 h-20 bg-orange-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-orange-500 shadow-inner">
-                             <Code className="w-10 h-10" />
-                        </div>
-                        <h2 className="text-3xl md:text-5xl font-black text-orange-900 mb-4">{problem.expression}</h2>
-                        <p className="text-xl text-orange-700 font-medium mb-8">{problem.codingDetails?.concepts}</p>
-
-                        <div className="flex flex-col md:flex-row gap-4 justify-center">
-                            <a
-                                href={problem.codingDetails?.url || "https://scratch.mit.edu/create"}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-4 rounded-2xl text-xl transition-all hover:scale-105 shadow-lg transform hover:-translate-y-1"
-                            >
-                                <ExternalLink className="w-6 h-6" /> Open Scratch
-                            </a>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-[2rem] border-4 border-sky-50 shadow-lg max-w-2xl w-full text-center">
-                        <p className="text-sky-600 font-medium mb-4">Did you finish the project?</p>
-                        <button
-                             onClick={() => setUserAnswer('done')}
-                             className={`px-8 py-3 rounded-xl font-black text-lg transition-all transform hover:scale-105 active:scale-95 ${userAnswer === 'done' ? 'bg-green-500 text-white shadow-green-200 shadow-lg' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
-                        >
-                             {userAnswer === 'done' ? 'Ready to Submit!' : 'Yes, I finished it!'}
-                        </button>
-                    </div>
-                </div>
+                <CodingStoryView problem={problem} userAnswer={userAnswer} setUserAnswer={setUserAnswer} />
             ) : practiceType === 'visual' ? (
                 <>
                   {/* Visual Mode: Problem Display */}
                   <div className="text-center animate-in zoom-in-50 duration-500">
-                      <div className={`${problem.type === 'english' ? 'text-2xl md:text-4xl lg:landscape:text-2xl leading-snug max-w-4xl mx-auto py-4 whitespace-pre-wrap' : 'text-6xl sm:text-8xl md:text-[11rem] lg:landscape:text-7xl leading-none'} font-black text-sky-900 tracking-tighter drop-shadow-xl select-none`}>
-                      {problem.type === 'english' ? problem.expression : <>{problem.expression}<span className="text-pink-500"> = </span>?</>}
+                      <div className={`text-6xl sm:text-8xl md:text-[10rem] lg:landscape:text-7xl leading-none font-extrabold text-slate-900 dark:text-white tracking-tight select-none`}>
+                      {problem.expression}<span className="text-indigo-600"> = </span>?
                       </div>
                   </div>
 
                   {/* Visual Mode: Abacus Interaction */}
-                  {problem.type !== 'english' && (
-                  <div className="bg-sky-100/50 p-2 md:p-6 xl:p-10 lg:landscape:p-3 rounded-[2rem] md:rounded-[4rem] lg:landscape:rounded-[2rem] border-4 md:border-8 lg:landscape:border-4 border-white shadow-xl md:shadow-2xl max-w-5xl mx-auto transform transition-transform hover:scale-[1.01] w-full">
+                  <div className="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-slate-800 dark:to-slate-800 p-3 md:p-6 xl:p-10 lg:landscape:p-3 rounded-3xl border border-slate-200/70 dark:border-slate-700 shadow-md max-w-5xl mx-auto w-full">
                       <Abacus interactive={true} onChange={setAbacusValue} columns={11} />
                   </div>
-                  )}
                 </>
             ) : (
                 /* Mental Mode: Audio Only */
@@ -158,36 +129,36 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
             <div className="max-w-xl mx-auto space-y-6 md:space-y-10">
               {problem.type !== 'coding' && <div className="relative group">
                 <input 
-                  type={problem.type === 'english' ? "text" : "number"}
+                  type="number"
                   step="any"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder={problem.type === 'english' ? "Type answer..." : "?"}
+                  placeholder="?"
                   onKeyDown={(e) => e.key === 'Enter' && checkAnswer()}
-                  className={`w-full text-center text-5xl md:text-7xl lg:landscape:text-5xl font-black py-6 md:py-10 lg:landscape:py-6 px-6 md:px-12 lg:landscape:px-6 rounded-[2rem] md:rounded-[3.5rem] lg:landscape:rounded-[2rem] border-[6px] md:border-[10px] lg:landscape:border-[6px] transition-all outline-none shadow-[0_15px_30px_-8px_rgba(0,0,0,0.15)] md:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] ${
-                    feedback === 'correct' ? 'border-green-400 bg-green-50 text-green-600' :
-                    feedback === 'incorrect' ? 'border-pink-400 bg-pink-50 text-pink-600' :
-                    'border-white bg-white focus:border-yellow-400 text-sky-900'
+                  className={`w-full text-center text-5xl md:text-7xl lg:landscape:text-5xl font-extrabold py-5 md:py-8 lg:landscape:py-5 px-6 md:px-12 lg:landscape:px-6 rounded-3xl border-2 transition-colors outline-none shadow-lg ${
+                    feedback === 'correct' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' :
+                    feedback === 'incorrect' ? 'border-rose-400 bg-rose-50 text-rose-700' :
+                    'border-slate-200 bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white'
                   }`}
                 />
-                {feedback === 'correct' && <CheckCircle2 className="absolute -right-2 md:-right-20 lg:landscape:-right-2 top-1/2 -translate-y-1/2 text-green-500 w-10 h-10 md:w-16 md:h-16 lg:landscape:w-10 lg:landscape:h-10 animate-bounce" />}
-                {feedback === 'incorrect' && <XCircle className="absolute -right-2 md:-right-20 lg:landscape:-right-2 top-1/2 -translate-y-1/2 text-pink-500 w-10 h-10 md:w-16 md:h-16 lg:landscape:w-10 lg:landscape:h-10 animate-shake" />}
+                {feedback === 'correct' && <CheckCircle2 className="absolute -right-2 md:-right-20 lg:landscape:-right-2 top-1/2 -translate-y-1/2 text-emerald-500 w-10 h-10 md:w-16 md:h-16 lg:landscape:w-10 lg:landscape:h-10 animate-bounce" />}
+                {feedback === 'incorrect' && <XCircle className="absolute -right-2 md:-right-20 lg:landscape:-right-2 top-1/2 -translate-y-1/2 text-rose-500 w-10 h-10 md:w-16 md:h-16 lg:landscape:w-10 lg:landscape:h-10 animate-shake" />}
               </div>
 
               } <div className="flex gap-3 md:gap-6">
                 {feedback === 'correct' ? (
                   <button
                     onClick={handleNextProblem}
-                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 md:py-8 lg:landscape:py-4 rounded-2xl md:rounded-[2.5rem] lg:landscape:rounded-2xl shadow-xl md:shadow-2xl flex items-center justify-center gap-2 md:gap-4 transition-all hover:scale-105 active:scale-95 text-lg md:text-2xl lg:landscape:text-lg border-b-4 md:border-b-8 lg:landscape:border-b-4 border-green-800"
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 md:py-6 lg:landscape:py-4 rounded-2xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 md:gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98] text-lg md:text-xl lg:landscape:text-lg"
                   >
-                    AWESOME! <ArrowRight className="w-6 h-6 md:w-10 md:h-10 lg:landscape:w-6 lg:landscape:h-6" />
+                    Awesome! <ArrowRight className="w-5 h-5 md:w-7 md:h-7" />
                   </button>
                 ) : (
                   <button
                     onClick={checkAnswer}
-                    className="flex-1 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-black py-4 md:py-8 lg:landscape:py-4 rounded-2xl md:rounded-[2.5rem] lg:landscape:rounded-2xl shadow-xl md:shadow-2xl flex items-center justify-center gap-2 md:gap-4 transition-all hover:scale-105 active:scale-95 text-lg md:text-2xl lg:landscape:text-lg border-b-4 md:border-b-8 lg:landscape:border-b-4 border-indigo-800"
+                    className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-4 md:py-6 lg:landscape:py-4 rounded-2xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 md:gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98] text-lg md:text-xl lg:landscape:text-lg"
                   >
-                    READY? <CheckCircle2 className="w-6 h-6 md:w-10 md:h-10 lg:landscape:w-6 lg:landscape:h-6" />
+                    Check Answer <CheckCircle2 className="w-5 h-5 md:w-7 md:h-7" />
                   </button>
                 )}
                 <button
@@ -195,7 +166,8 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
                     setUserAnswer('');
                     setFeedback(null);
                   }}
-                  className="bg-white hover:bg-sky-50 text-sky-300 hover:text-sky-500 px-4 md:px-10 lg:landscape:px-4 rounded-2xl md:rounded-[2.5rem] lg:landscape:rounded-2xl transition-all shadow-lg border-2 md:border-4 border-sky-50 transform hover:rotate-12"
+                  className="bg-white hover:bg-slate-50 text-slate-500 hover:text-indigo-600 px-4 md:px-6 rounded-2xl transition-colors shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
+                  aria-label="Clear answer"
                 >
                   <RefreshCw className="w-6 h-6 md:w-10 md:h-10 lg:landscape:w-6 lg:landscape:h-6" />
                 </button>
@@ -203,6 +175,134 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
             </div>
 
          </div>
+      </div>
+    </div>
+  );
+};
+
+interface CodingStoryViewProps {
+  problem: Problem;
+  userAnswer: string;
+  setUserAnswer: (val: string) => void;
+}
+
+const CodingStoryView: React.FC<CodingStoryViewProps> = ({ problem, userAnswer, setUserAnswer }) => {
+  const details = problem.codingDetails;
+  const hints = details?.hints ?? [];
+  const blocks = details?.blocks ?? [];
+  const [hintsShown, setHintsShown] = useState(0);
+
+  // Reset hint counter when the story changes
+  useEffect(() => {
+    setHintsShown(0);
+  }, [problem.id]);
+
+  return (
+    <div className="flex flex-col items-center justify-center space-y-6 animate-in zoom-in-50 duration-500 w-full">
+      {/* Story card */}
+      <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20 p-6 md:p-10 rounded-3xl border-4 border-orange-100 dark:border-orange-900/40 shadow-xl max-w-4xl w-full">
+        <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-orange-100 dark:bg-orange-800/40 rounded-3xl flex items-center justify-center text-orange-500 dark:text-orange-300 shadow-inner shrink-0">
+            <Code className="w-8 h-8 md:w-10 md:h-10" />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-wrap items-center gap-2 mb-2 justify-center md:justify-start">
+              {details?.levelTitle && (
+                <span className="px-2 py-1 rounded-full bg-orange-200/60 dark:bg-orange-800/40 text-orange-700 dark:text-orange-200 text-xs font-bold uppercase tracking-wide">
+                  {details.levelTitle}
+                </span>
+              )}
+              {details?.stageName && (
+                <span className="px-2 py-1 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-200 text-xs font-bold">
+                  {details.stageName}
+                </span>
+              )}
+              {details?.category && (
+                <span className="px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 text-xs font-bold">
+                  {details.category}
+                </span>
+              )}
+            </div>
+            <h2 className="text-2xl md:text-4xl font-black text-orange-900 dark:text-orange-100 mb-3">
+              {problem.expression}
+            </h2>
+            {details?.scenario && (
+              <p className="text-base md:text-lg text-orange-800/90 dark:text-orange-100/80 font-medium leading-relaxed flex items-start gap-2">
+                <BookOpen className="w-5 h-5 mt-1 shrink-0 text-orange-500" />
+                <span>{details.scenario}</span>
+              </p>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Embedded Blockly workspace + stage */}
+      <BlocklyEditor suggestedBlocks={blocks} storyKey={problem.id} />
+
+      {/* Blocks to use */}
+      {blocks.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 p-5 md:p-7 rounded-3xl border-4 border-sky-100 dark:border-slate-700 shadow-md max-w-4xl w-full">
+          <h3 className="flex items-center gap-2 text-base md:text-lg font-black text-sky-900 dark:text-sky-100 mb-3">
+            <Blocks className="w-5 h-5 text-sky-500" /> Blocks you'll use
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {blocks.map((b, i) => (
+              <span
+                key={i}
+                className="px-3 py-1.5 rounded-full bg-sky-50 dark:bg-slate-700 border border-sky-200 dark:border-slate-600 text-sky-800 dark:text-sky-100 text-xs md:text-sm font-mono"
+              >
+                {b}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hints */}
+      {hints.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 p-5 md:p-7 rounded-3xl border-4 border-yellow-100 dark:border-yellow-900/40 shadow-md max-w-4xl w-full">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h3 className="flex items-center gap-2 text-base md:text-lg font-black text-amber-700 dark:text-amber-200">
+              <Lightbulb className="w-5 h-5 text-amber-500" /> Hints ({hintsShown}/{hints.length})
+            </h3>
+            {hintsShown < hints.length && (
+              <button
+                onClick={() => setHintsShown((n) => Math.min(n + 1, hints.length))}
+                className="bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-4 py-2 rounded-xl text-xs md:text-sm shadow-md transition-all hover:scale-105 active:scale-95"
+              >
+                Reveal next hint
+              </button>
+            )}
+          </div>
+          <ol className="space-y-2 list-decimal list-inside text-sm md:text-base text-slate-700 dark:text-slate-200 leading-relaxed">
+            {hints.slice(0, hintsShown).map((h, i) => (
+              <li key={i} className="animate-in fade-in slide-in-from-left-2 duration-300">
+                {h}
+              </li>
+            ))}
+            {hintsShown === 0 && (
+              <p className="text-slate-400 dark:text-slate-500 italic text-sm">
+                Try the project on your own first. Stuck? Reveal a hint above.
+              </p>
+            )}
+          </ol>
+        </div>
+      )}
+
+      {/* Mark as done */}
+      <div className="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-3xl border-4 border-green-100 dark:border-green-900/40 shadow-md max-w-2xl w-full text-center">
+        <p className="text-sky-700 dark:text-sky-200 font-medium mb-3">Did you finish the project in Scratch?</p>
+        <button
+          onClick={() => setUserAnswer('done')}
+          className={`px-8 py-3 rounded-xl font-black text-lg transition-all transform hover:scale-105 active:scale-95 ${
+            userAnswer === 'done'
+              ? 'bg-green-500 text-white shadow-green-200 shadow-lg'
+              : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-200 hover:bg-gray-200'
+          }`}
+        >
+          {userAnswer === 'done' ? 'Ready to Submit!' : 'Yes, I finished it!'}
+        </button>
       </div>
     </div>
   );

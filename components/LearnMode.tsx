@@ -70,54 +70,54 @@ const LearnMode: React.FC<LearnModeProps> = ({
   const levelSteps = getLevelSteps(currentLevel);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 md:space-y-10 animate-in zoom-in-95 duration-500">
-       <div className="grid md:grid-cols-2 gap-4 md:gap-8">
-        <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border-4 border-sky-50 shadow-xl transition-transform hover:scale-[1.02]">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-pink-100 rounded-2xl md:rounded-3xl flex items-center justify-center mb-4 md:mb-6 text-pink-600 shadow-inner">
-            <Calculator className="w-6 h-6 md:w-8 md:h-8" />
+    <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-in zoom-in-95 duration-500">
+       <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white dark:bg-slate-800/60 p-6 md:p-8 rounded-2xl border border-slate-200/70 dark:border-slate-700 shadow-sm">
+          <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/15 rounded-xl flex items-center justify-center mb-4 text-indigo-600 dark:text-indigo-300">
+            <Calculator className="w-6 h-6" />
           </div>
-          <h3 className="text-xl md:text-2xl font-black text-sky-900 mb-2 md:mb-3">Magic Finger Theory</h3>
-          <p className="text-sm md:text-base text-sky-600 font-medium leading-relaxed">{currentLevel.abacusDesc}</p>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Magic Finger Theory</h3>
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed">{currentLevel.abacusDesc}</p>
         </div>
-        <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border-4 border-sky-50 shadow-xl transition-transform hover:scale-[1.02]">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-2xl md:rounded-3xl flex items-center justify-center mb-4 md:mb-6 text-purple-600 shadow-inner">
-            <Brain className="w-6 h-6 md:w-8 md:h-8" />
+        <div className="bg-white dark:bg-slate-800/60 p-6 md:p-8 rounded-2xl border border-slate-200/70 dark:border-slate-700 shadow-sm">
+          <div className="w-12 h-12 bg-violet-50 dark:bg-violet-500/15 rounded-xl flex items-center justify-center mb-4 text-violet-600 dark:text-violet-300">
+            <Brain className="w-6 h-6" />
           </div>
-          <h3 className="text-xl md:text-2xl font-black text-sky-900 mb-2 md:mb-3">Mental Superpowers</h3>
-          <p className="text-sm md:text-base text-sky-600 font-medium leading-relaxed">{currentLevel.mentalDesc}</p>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Mental Superpowers</h3>
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed">{currentLevel.mentalDesc}</p>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-sky-500 to-indigo-600 text-white rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-12 relative overflow-hidden shadow-2xl">
+      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-3xl p-8 md:p-10 relative overflow-hidden shadow-lg shadow-indigo-500/30">
         <div className="relative z-10">
-          <h3 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 flex items-center gap-3">
-            <GraduationCap className="w-8 h-8 md:w-10 md:h-10" /> Your Training Goals
+          <h3 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3">
+            <GraduationCap className="w-7 h-7 md:w-8 md:h-8" /> Your Training Goals
           </h3>
-          <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
              {currentLevel.stages.map((s, idx) => (
-               <div key={idx} className="bg-white/20 p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-white/20 backdrop-blur-xl transition-all hover:bg-white/30 hover:translate-x-1">
-                 <span className="block font-black text-lg md:text-xl mb-1 md:mb-2">{s.name}</span>
-                 <span className="text-sky-50 font-medium text-xs md:text-sm leading-snug">{s.description}</span>
+               <div key={idx} className="bg-white/10 p-4 md:p-5 rounded-xl border border-white/15 backdrop-blur-sm transition-colors hover:bg-white/15">
+                 <span className="block font-bold text-base md:text-lg mb-1">{s.name}</span>
+                 <span className="text-indigo-100/90 font-medium text-xs md:text-sm leading-relaxed">{s.description}</span>
                </div>
              ))}
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border-4 border-sky-50 shadow-xl">
-        <h3 className="text-xl md:text-2xl font-black text-sky-900 mb-2 md:mb-3">
+      <div className="bg-white dark:bg-slate-800/60 p-6 md:p-8 rounded-2xl border border-slate-200/70 dark:border-slate-700 shadow-sm">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
           Level {currentLevel.id} Step-by-Step Abacus Guide
         </h3>
-        <p className="text-sm md:text-base text-sky-600 font-medium leading-relaxed mb-4 md:mb-6">
-          Follow this playbook for <span className="font-black">{currentLevel.title}</span> to practice the exact method required at this level.
+        <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed mb-5">
+          Follow this playbook for <span className="font-bold text-slate-900 dark:text-white">{currentLevel.title}</span> to practice the exact method required at this level.
         </p>
-        <ol className="space-y-3 md:space-y-4">
+        <ol className="space-y-3">
           {levelSteps.map((step, idx) => (
-            <li key={idx} className="flex items-start gap-3 md:gap-4">
-              <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-sky-100 text-sky-700 font-black text-sm md:text-base flex items-center justify-center shrink-0 mt-0.5">
+            <li key={idx} className="flex items-start gap-3">
+              <span className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                 {idx + 1}
               </span>
-              <p className="text-sm md:text-base text-sky-700 font-medium leading-relaxed">{step}</p>
+              <p className="text-sm md:text-base text-slate-700 dark:text-slate-200 font-medium leading-relaxed">{step}</p>
             </li>
           ))}
         </ol>
