@@ -1,0 +1,9 @@
+{
+	"appId": "com.devois.Abacus",
+	"appName": "AbacusGame",
+	"webDir": "dist",
+	"ios": {
+		"contentInset": "always"
+	},
+	"packageClassList": []
+}
