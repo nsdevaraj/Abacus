@@ -1,37 +1,110 @@
 @import "tailwindcss";
 
-/* ---------------------------------------------------------------------------
-   Readability overrides
-   ---------------------------------------------------------------------------
-   The UI used Tailwind's slate-400/500 for secondary copy on a soft pastel
-   background. That combination sits below the WCAG AA contrast threshold on
-   many displays and renders as low-contrast "ghost" text (e.g. the
-   "Collect stars to become a Hero" and "Simple 1-digit addition." lines).
-   These rules override the generated utilities — same selector specificity,
-   declared AFTER Tailwind's layer so they win the cascade — and lift muted
-   text to accessible contrast in both themes.
-   --------------------------------------------------------------------------- */
+/* ────────────────────────────────────────────────────────────────────────
+   Design system — adopted from the verification/ reference.
+   Brand palette: amber by default, exposed via CSS vars so it could be
+   swapped later. All `brand-*` Tailwind utilities (e.g. `bg-brand-600`,
+   `text-brand-300`, `border-brand-200`) are wired through @theme.
+   ──────────────────────────────────────────────────────────────────────── */
 
-/* Light theme: nudge low-contrast greys toward slate-700/600. */
-.text-slate-400 { color: #475569; }   /* was #94a3b8 — tiny eyebrow labels  */
-.text-slate-500 { color: #334155; }   /* was #64748b — body copy            */
-.text-slate-600 { color: #1f2937; }   /* was #475569 — subheaders           */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-/* Dark theme: brighten the same tokens. The .dark class is toggled on <html>. */
-.dark .dark\:text-slate-400 { color: #cbd5e1; } /* was #94a3b8 */
-.dark .dark\:text-slate-500 { color: #94a3b8; } /* was #64748b */
-.dark .text-slate-400 { color: #cbd5e1; }
-.dark .text-slate-500 { color: #cbd5e1; }
-
-/* Make tiny "eyebrow" labels (the 10–11px uppercase tracked ones) heavier so
-   they remain legible after the colour bump.                               */
-.text-\[10px\],
-.text-\[11px\] {
-  font-weight: 700;
+  --color-brand-50:  rgb(255 251 235);
+  --color-brand-100: rgb(254 243 199);
+  --color-brand-200: rgb(253 230 138);
+  --color-brand-300: rgb(252 211 77);
+  --color-brand-400: rgb(251 191 36);
+  --color-brand-500: rgb(245 158 11);
+  --color-brand-600: rgb(217 119 6);
+  --color-brand-700: rgb(180 83 9);
+  --color-brand-800: rgb(146 64 14);
+  --color-brand-900: rgb(120 53 15);
 }
 
-/* Slightly larger minimum size for descriptive paragraphs that previously
-   collapsed to text-xs (12px) on mobile.                                   */
-@media (max-width: 767px) {
-  p.text-xs { font-size: 13px; line-height: 1.45; }
+/* Dark-mode variant keys off `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* Slim scrollbar inside scroll areas. */
+.scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgb(0 0 0 / 0.08);
+  border-radius: 4px;
 }
+.dark .scroll-area::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.08);
+}
+
+/* Hidden scrollbar utility (carry-over). */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Bead inner highlight and abacus rod gradient. */
+.bead-shadow {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.35) inset,
+    0 -1px 0 rgb(0 0 0 / 0.2) inset,
+    0 2px 4px rgb(0 0 0 / 0.18);
+}
+.rod {
+  background: linear-gradient(90deg,
+    rgb(120 113 108 / 0.35) 0%,
+    rgb(168 162 158)        40%,
+    rgb(231 229 228)        50%,
+    rgb(168 162 158)        60%,
+    rgb(120 113 108 / 0.35) 100%);
+}
+.dark .rod {
+  background: linear-gradient(90deg,
+    rgb(68 64 60 / 0.6) 0%,
+    rgb(120 113 108)    40%,
+    rgb(168 162 158)    50%,
+    rgb(120 113 108)    60%,
+    rgb(68 64 60 / 0.6) 100%);
+}
+
+/* Subtle dotted grid for surfaces that need texture without noise. */
+.dot-grid {
+  background-image: radial-gradient(rgb(15 23 42 / 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.dark .dot-grid {
+  background-image: radial-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px);
+}
+
+/* Focus ring honoring brand. */
+[data-focus]:focus-visible,
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Animations. */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin-slow 6s linear infinite; }
+
+@keyframes pop {
+  0%   { transform: scale(.6); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.animate-pop { animation: pop 280ms cubic-bezier(.2,.7,.3,1.2) both; }
+
+@keyframes slide-up {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.animate-slide-up { animation: slide-up 240ms ease-out both; }
+
+@keyframes shake {
+  0%, 100% { transform: translate(0, -50%); }
+  20%      { transform: translate(-12px, -50%); }
+  40%      { transform: translate( 12px, -50%); }
+  60%      { transform: translate(-8px,  -50%); }
+  80%      { transform: translate( 8px,  -50%); }
+}
+.animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }

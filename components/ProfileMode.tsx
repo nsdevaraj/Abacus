@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Trash2 } from 'lucide-react';
+import { Trophy, Trash2, Bell, Focus, Moon } from 'lucide-react';
 
 interface ProfileModeProps {
   darkMode: boolean;
@@ -13,6 +13,49 @@ interface ProfileModeProps {
   globalCoins: number;
 }
 
+const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => (
+  <button
+    type="button"
+    data-focus
+    onClick={onChange}
+    aria-pressed={checked}
+    className={`w-11 h-6 rounded-full p-0.5 transition-colors ${
+      checked ? 'bg-brand-600' : 'bg-slate-300 dark:bg-slate-700'
+    }`}
+  >
+    <div
+      className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${
+        checked ? 'translate-x-5' : 'translate-x-0'
+      }`}
+    />
+  </button>
+);
+
+interface RowProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: () => void;
+  hint?: string;
+}
+
+const Row: React.FC<RowProps> = ({ icon, title, description, checked, onChange, hint }) => (
+  <div className="flex items-center justify-between gap-4 p-4">
+    <div className="flex items-start gap-3 min-w-0">
+      <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-300 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h4>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{description}</p>
+        {hint && <p className="text-[11px] text-rose-500 mt-1">{hint}</p>}
+      </div>
+    </div>
+    <Toggle checked={checked} onChange={onChange} />
+  </div>
+);
+
 const ProfileMode: React.FC<ProfileModeProps> = ({
   darkMode,
   setDarkMode,
@@ -22,79 +65,78 @@ const ProfileMode: React.FC<ProfileModeProps> = ({
   setFocusMode,
   personalBest,
   handleResetAll,
-  globalCoins
+  globalCoins,
 }) => {
-  // Reusable Toggle Component
-  const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
-    <button
-      onClick={onChange}
-      className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${
-        checked ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
-      }`}
-    >
-      <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${
-        checked ? 'translate-x-6' : 'translate-x-0'
-      }`} />
-    </button>
-  );
-
   const notificationsBlocked =
     typeof Notification !== 'undefined' && Notification.permission === 'denied';
 
   return (
-    <div className="max-w-md mx-auto px-4 pt-4 pb-24 dark:text-white"> 
+    <div className="max-w-3xl mx-auto animate-slide-up pb-12">
+      <p className="text-[11px] uppercase tracking-[0.16em] font-bold text-slate-500 dark:text-slate-400 mb-2">
+        Profile
+      </p>
+      <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        Hi, Bead Hero
+      </h1>
+      <p className="mt-2 text-slate-600 dark:text-slate-400 text-[15px]">Your stats today.</p>
 
-      <h3 className="text-slate-900 dark:text-white font-bold text-base mb-3">Learning preferences</h3>
-
-      <div className="bg-white dark:bg-slate-800/60 rounded-2xl mb-8 shadow-sm border border-slate-200/70 dark:border-slate-700 overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
-          <div className="pr-4">
-            <h4 className="font-semibold text-slate-900 dark:text-white">Class reminders</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Get notifications before every live session.</p>
-            {notificationsBlocked && (
-              <p className="text-[11px] text-rose-500 mt-1">Notifications are blocked in your browser settings.</p>
-            )}
+      <div className="mt-8 grid grid-cols-2 gap-3 md:gap-4">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+          <Trophy className="w-5 h-5 text-amber-500 mb-2" />
+          <div className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">{globalCoins}</div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-0.5">
+            Coins
           </div>
-          <Toggle checked={classReminders} onChange={() => setClassReminders(!classReminders)} />
         </div>
-
-        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
-          <div>
-            <h4 className="font-semibold text-slate-900 dark:text-white">Focus mode</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Reduce distractions during practice sessions.</p>
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+          <Trophy className="w-5 h-5 text-brand-600 mb-2" />
+          <div className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">{personalBest}</div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-0.5">
+            Personal best
           </div>
-          <Toggle checked={focusMode} onChange={() => setFocusMode(!focusMode)} />
-        </div>
-
-        <div className="flex items-center justify-between p-4">
-          <div>
-            <h4 className="font-semibold text-slate-900 dark:text-white">Dark theme</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automatically dim the interface at night.</p>
-          </div>
-          <Toggle checked={darkMode} onChange={() => setDarkMode(!darkMode)} />
         </div>
       </div>
 
-      <h3 className="text-slate-900 dark:text-white font-bold text-base mb-3">Account</h3>
+      <h3 className="text-[11px] uppercase tracking-[0.16em] font-bold text-slate-500 dark:text-slate-400 mt-10 mb-3">
+        Learning preferences
+      </h3>
 
-      <div className="bg-white dark:bg-slate-800/60 rounded-2xl p-4 mb-4 shadow-sm border border-slate-200/70 dark:border-slate-700 flex items-center justify-between">
-        <div>
-           <h4 className="font-semibold text-slate-900 dark:text-white">Personal best</h4>
-           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-             {personalBest > 0
-               ? `Highest speed sprint: ${personalBest} correct in a row`
-               : 'Solve problems in a row to set your personal best.'}
-           </p>
-        </div>
-        <Trophy className="w-6 h-6 text-amber-500" />
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 divide-y divide-slate-200/80 dark:divide-slate-800 overflow-hidden">
+        <Row
+          icon={<Bell className="w-[18px] h-[18px]" />}
+          title="Class reminders"
+          description="Get notifications before every live session."
+          checked={classReminders}
+          onChange={() => setClassReminders(!classReminders)}
+          hint={notificationsBlocked ? 'Notifications are blocked in your browser settings.' : undefined}
+        />
+        <Row
+          icon={<Focus className="w-[18px] h-[18px]" />}
+          title="Focus mode"
+          description="Reduce distractions during practice sessions."
+          checked={focusMode}
+          onChange={() => setFocusMode(!focusMode)}
+        />
+        <Row
+          icon={<Moon className="w-[18px] h-[18px]" />}
+          title="Dark theme"
+          description="Dim the interface for evening practice."
+          checked={darkMode}
+          onChange={() => setDarkMode(!darkMode)}
+        />
       </div>
+
+      <h3 className="text-[11px] uppercase tracking-[0.16em] font-bold text-slate-500 dark:text-slate-400 mt-8 mb-3">
+        Danger zone
+      </h3>
 
       <button
+        data-focus
         onClick={handleResetAll}
-        className="w-full bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-semibold py-3.5 rounded-2xl shadow-md shadow-rose-500/30 flex items-center justify-center gap-2 transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200/70 dark:border-rose-500/20 text-sm font-bold transition-colors"
       >
-        <Trash2 className="w-5 h-5" />
-        Reset progress
+        <Trash2 className="w-4 h-4" />
+        Reset all progress
       </button>
     </div>
   );

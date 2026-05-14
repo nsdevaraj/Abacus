@@ -5,48 +5,29 @@ import Header from './components/Header';
 import MapMode from './components/MapMode';
 import LearnMode from './components/LearnMode';
 import PracticeMode from './components/PracticeMode';
-import CalendarMode from './components/CalendarMode'; 
+import CalendarMode from './components/CalendarMode';
 import ProfileMode from './components/ProfileMode';
 import BottomNav from './components/BottomNav';
 
 const App = () => {
   const { state, actions } = useAbacusGame();
 
-  // While focus mode is on AND we're actively practicing, hide decorative chrome.
   const distractionFree = state.focusMode && state.mode === 'practice';
 
   if (state.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-indigo-300 font-semibold text-base">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300">
         <div className="flex flex-col items-center gap-4">
-           <div className="w-10 h-10 border-4 border-slate-700 border-t-indigo-400 rounded-full animate-spin"></div>
-           Loading your abacus adventure…
+          <div className="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-brand-500 rounded-full animate-spin" />
+          <p className="text-sm font-semibold">Loading your abacus adventure…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col 2xl:flex-row text-slate-800 font-sans dark:text-slate-100 overflow-hidden relative">
-
-      {/* Subtle decorative background */}
-      {!distractionFree && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-indigo-300/25 dark:bg-indigo-500/10 blur-3xl" />
-          <div className="absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-pink-300/20 dark:bg-pink-500/10 blur-3xl" />
-          <div className="absolute -bottom-40 left-1/4 w-[26rem] h-[26rem] rounded-full bg-amber-200/25 dark:bg-amber-400/10 blur-3xl" />
-        </div>
-      )}
-
-      {/* Mobile Sidebar Overlay */}
-      {state.mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 2xl:hidden backdrop-blur-sm"
-          onClick={() => actions.setMobileMenuOpen(false)}
-        />
-      )}
-
-      <Sidebar 
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <Sidebar
         mobileMenuOpen={state.mobileMenuOpen}
         setMobileMenuOpen={actions.setMobileMenuOpen}
         globalCoins={state.globalCoins}
@@ -61,8 +42,8 @@ const App = () => {
         setLearningPath={actions.setLearningPath}
       />
 
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 w-full">
-        {!['profile'].includes(state.mode) && (
+      <div className="relative flex-1 flex flex-col min-w-0">
+        {state.mode !== 'profile' && state.mode !== 'practice' && (
           <Header
             setMobileMenuOpen={actions.setMobileMenuOpen}
             currentLevel={state.currentLevel}
@@ -73,30 +54,31 @@ const App = () => {
             setMode={actions.setMode}
             practiceType={state.practiceType}
             setPracticeType={actions.setPracticeType}
+            darkMode={state.darkMode}
+            setDarkMode={actions.setDarkMode}
           />
         )}
 
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-24 pt-4 md:pt-8 no-scrollbar w-full">
+        <main className="flex-1 overflow-y-auto scroll-area px-4 md:px-10 py-8 md:py-12 pb-24 lg:pb-12">
           {state.mode === 'map' && (
-            <MapMode 
+            <MapMode
               practiceType={state.practiceType}
               currentLevel={state.currentLevel}
               levelProgress={state.levelProgress}
               startExercise={actions.startExercise}
             />
           )}
-          
+
           {state.mode === 'learn' && (
-            <LearnMode 
+            <LearnMode
               currentLevel={state.currentLevel}
               abacusValue={state.abacusValue}
               setAbacusValue={actions.setAbacusValue}
             />
           )}
 
-          {state.mode === 'calendar' && (
-            <CalendarMode logs={state.dailyLogs} />
-          )} 
+          {state.mode === 'calendar' && <CalendarMode logs={state.dailyLogs} />}
+
           {state.mode === 'profile' && (
             <ProfileMode
               darkMode={state.darkMode}
@@ -110,16 +92,10 @@ const App = () => {
               globalCoins={state.globalCoins}
             />
           )}
-        </div>
+        </main>
 
-        <BottomNav mode={state.mode} setMode={actions.setMode} hidden={distractionFree} />
-
-        {/* Practice Mode Logic: 
-            If practiceType is 'mental', PracticeMode will automatically hide the abacus and numbers 
-            and show an audio button instead. This is handled internally by PracticeMode.tsx.
-        */}
         {state.mode === 'practice' && state.problem && (
-          <PracticeMode 
+          <PracticeMode
             problem={state.problem}
             currentLevel={state.currentLevel}
             practiceType={state.practiceType}
@@ -135,30 +111,9 @@ const App = () => {
             setFeedback={actions.setFeedback}
           />
         )}
-      </main>
-      
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes shake {
-          0%, 100% { transform: translate(0, -50%); }
-          20% { transform: translate(-20px, -50%); }
-          40% { transform: translate(20px, -50%); }
-          60% { transform: translate(-15px, -50%); }
-          80% { transform: translate(15px, -50%); }
-        }
-        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(-15%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
-          50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
-        }
-        .animate-bounce-slow { animation: bounce-slow 2s infinite; }
-      `}</style>
+
+        <BottomNav mode={state.mode} setMode={actions.setMode} hidden={distractionFree} />
+      </div>
     </div>
   );
 };

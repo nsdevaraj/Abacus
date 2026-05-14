@@ -37,7 +37,7 @@ export const useAbacusGame = () => {
     }
   };
 
-  const [darkMode, setDarkMode] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.DARK_MODE, true));
+  const [darkMode, setDarkMode] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.DARK_MODE, false));
   const [classReminders, setClassReminders] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.CLASS_REMINDERS, false));
   const [focusMode, setFocusMode] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.FOCUS_MODE, false));
   const [personalBest, setPersonalBest] = useState<number>(() => {
@@ -57,6 +57,7 @@ export const useAbacusGame = () => {
     // Sync class on <html> so `dark:` variants and CSS `.dark body` rules apply globally.
     if (typeof document !== 'undefined') {
       document.documentElement.classList.toggle('dark', darkMode);
+      document.documentElement.classList.toggle('light', !darkMode);
     }
   }, [darkMode]);
 
