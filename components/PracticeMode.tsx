@@ -68,7 +68,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({
          </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col items-center justify-center relative w-full">
+      <div className={`flex-1 overflow-y-auto p-4 md:p-10 flex flex-col items-center relative w-full ${problem.type === 'coding' ? 'justify-start' : 'justify-center'}`}>
          
          {/* Celebration Overlay */}
          {showCelebration && (
