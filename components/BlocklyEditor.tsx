@@ -724,10 +724,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ suggestedBlocks = [], sto
             <div className="text-xs text-rose-600 bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg font-mono break-all">
               {error}
             </div>
-          )}
-          <p className="text-[11px] text-sky-600/80 dark:text-sky-300/70 leading-snug">
-            Powered by Blockly (Apache-2.0). Sprite & stage run locally — no internet needed.
-          </p>
+          )} 
         </div>
       </div>
     </div>
