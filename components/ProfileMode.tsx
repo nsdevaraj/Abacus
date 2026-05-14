@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Trophy, Trash2 } from 'lucide-react';
 
 interface ProfileModeProps {
   darkMode: boolean;
   setDarkMode: (enabled: boolean) => void;
+  classReminders: boolean;
+  setClassReminders: (enabled: boolean) => void;
+  focusMode: boolean;
+  setFocusMode: (enabled: boolean) => void;
+  personalBest: number;
   handleResetAll: () => void;
   globalCoins: number;
 }
@@ -11,12 +16,14 @@ interface ProfileModeProps {
 const ProfileMode: React.FC<ProfileModeProps> = ({
   darkMode,
   setDarkMode,
+  classReminders,
+  setClassReminders,
+  focusMode,
+  setFocusMode,
+  personalBest,
   handleResetAll,
   globalCoins
 }) => {
-  const [classReminders, setClassReminders] = useState(true);
-  const [focusMode, setFocusMode] = useState(false);
-
   // Reusable Toggle Component
   const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
     <button
@@ -31,6 +38,9 @@ const ProfileMode: React.FC<ProfileModeProps> = ({
     </button>
   );
 
+  const notificationsBlocked =
+    typeof Notification !== 'undefined' && Notification.permission === 'denied';
+
   return (
     <div className="max-w-md mx-auto px-4 pt-4 pb-24 dark:text-white"> 
 
@@ -38,9 +48,12 @@ const ProfileMode: React.FC<ProfileModeProps> = ({
 
       <div className="bg-white dark:bg-slate-800/60 rounded-2xl mb-8 shadow-sm border border-slate-200/70 dark:border-slate-700 overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
-          <div>
+          <div className="pr-4">
             <h4 className="font-semibold text-slate-900 dark:text-white">Class reminders</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Get notifications before every live session.</p>
+            {notificationsBlocked && (
+              <p className="text-[11px] text-rose-500 mt-1">Notifications are blocked in your browser settings.</p>
+            )}
           </div>
           <Toggle checked={classReminders} onChange={() => setClassReminders(!classReminders)} />
         </div>
@@ -67,7 +80,11 @@ const ProfileMode: React.FC<ProfileModeProps> = ({
       <div className="bg-white dark:bg-slate-800/60 rounded-2xl p-4 mb-4 shadow-sm border border-slate-200/70 dark:border-slate-700 flex items-center justify-between">
         <div>
            <h4 className="font-semibold text-slate-900 dark:text-white">Personal best</h4>
-           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest speed sprint: 68 correct</p>
+           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+             {personalBest > 0
+               ? `Highest speed sprint: ${personalBest} correct in a row`
+               : 'Solve problems in a row to set your personal best.'}
+           </p>
         </div>
         <Trophy className="w-6 h-6 text-amber-500" />
       </div>

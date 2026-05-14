@@ -549,6 +549,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ suggestedBlocks = [], sto
 
     const workspace = Blockly.inject(blocklyDivRef.current, {
       toolbox: buildToolbox(),
+      media: '/blockly-media/',
       grid: { spacing: 24, length: 2, colour: '#e2e8f0', snap: true },
       trashcan: true,
       zoom: { controls: true, wheel: false, startScale: 0.9, minScale: 0.5, maxScale: 1.5 },

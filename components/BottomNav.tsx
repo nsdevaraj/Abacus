@@ -5,9 +5,11 @@ import { AppMode } from '../types';
 interface BottomNavProps {
   mode: AppMode;
   setMode: (mode: AppMode) => void;
+  hidden?: boolean;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ mode, setMode }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ mode, setMode, hidden = false }) => {
+  if (hidden) return null;
   const navItems = [
     { id: 'map', label: 'Home', icon: Home },
     { id: 'calendar', label: 'Progress', icon: BarChart2 },

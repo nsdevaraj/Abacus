@@ -842,6 +842,1140 @@ export const CODING_LEVELS: CodingLevel[] = [
       },
     ],
   },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Animation Studio",
+    tagline: "Frames, costumes & timing",
+    summary: "Bring sprites to life with costume animation and timing.",
+    stages: [
+      {
+        name: "Walk Cycle",
+        description: "Use 'next costume' inside a loop to create animation.",
+        stories: [
+          {
+            title: "Walking Cat",
+            scenario: "Make the cat walk across the stage with a proper walk-cycle animation.",
+            category: "Looks / Motion / Control",
+            blocks: ["when ⚑ clicked", "forever", "next costume", "move 5 steps", "wait 0.1 seconds", "if on edge, bounce"],
+            hints: [
+              "Inside a 'forever' loop: 'next costume', 'move 5 steps', 'wait 0.1 seconds'.",
+              "Add 'if on edge, bounce' so it turns around at the edges.",
+              "Try 'set rotation style left-right' so the cat flips without going upside-down.",
+            ],
+          },
+          {
+            title: "Flapping Bird",
+            scenario: "A bird flaps its wings while gliding around the stage.",
+            category: "Looks / Motion",
+            blocks: ["forever", "switch costume to wing-up", "wait 0.15 seconds", "switch costume to wing-down", "move 4 steps"],
+            hints: [
+              "Pick a bird sprite with two wing costumes.",
+              "Alternate 'switch costume to wing-up' / 'wing-down' with short waits.",
+              "Combine with 'move' to make it glide forward while flapping.",
+            ],
+          },
+          {
+            title: "Spinning Coin",
+            scenario: "A coin spins in place by cycling through 4 costumes.",
+            category: "Looks / Control",
+            blocks: ["forever", "next costume", "wait 0.05 seconds"],
+            hints: [
+              "Paint or import 4 costumes showing the coin at 0°, 45°, 90°, 135°.",
+              "Loop 'next costume' with a tiny wait — the coin appears to spin.",
+              "Place several coin clones around the stage for a treasure scene.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Smooth Motion",
+        description: "Combine glide and easing for cinematic moves.",
+        stories: [
+          {
+            title: "Camera Pan",
+            scenario: "Move three sprites in formation gliding across the stage.",
+            category: "Motion / Events",
+            blocks: ["broadcast pan", "when I receive pan", "glide 3 secs to x: 200 y: 0"],
+            hints: [
+              "Each sprite listens for 'when I receive pan'.",
+              "Each one glides 3 seconds to a different x offset.",
+              "Use 'broadcast pan' on the green flag to start them all together.",
+            ],
+          },
+          {
+            title: "Bouncing Logo",
+            scenario: "A logo bounces around like the classic DVD screensaver.",
+            category: "Motion / Control",
+            blocks: ["forever", "move 5 steps", "if on edge, bounce", "change color effect by 5"],
+            hints: [
+              "Inside 'forever': move + 'if on edge, bounce'.",
+              "Add 'change color effect by 5' for the rainbow effect.",
+              "Set rotation style to 'don't rotate' so the logo stays upright.",
+            ],
+          },
+          {
+            title: "Pendulum",
+            scenario: "A pendulum swings back and forth using glide.",
+            category: "Motion / Control",
+            blocks: ["forever", "glide 1 secs to x: -100 y: -50", "glide 1 secs to x: 100 y: -50"],
+            hints: [
+              "Inside a forever loop, glide left then glide right.",
+              "Adjust the seconds for a faster or slower swing.",
+              "Add a 'point in direction' before each glide for swinging tilt.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Effects Lab",
+        description: "Combine Looks effects for visual flair.",
+        stories: [
+          {
+            title: "Ghostly Fade",
+            scenario: "A ghost fades in and out continuously.",
+            category: "Looks / Control",
+            blocks: ["forever", "repeat 25", "change ghost effect by 4", "repeat 25", "change ghost effect by -4"],
+            hints: [
+              "Use two repeat loops: one fading out, one fading back in.",
+              "'change ghost effect by 4' makes the sprite more transparent.",
+              "Reset with 'clear graphic effects' at the start.",
+            ],
+          },
+          {
+            title: "Disco Lights",
+            scenario: "The stage cycles through colors like a disco floor.",
+            category: "Looks / Sound / Control",
+            blocks: ["forever", "change color effect by 25", "wait 0.2 seconds", "play sound Pop"],
+            hints: [
+              "On the Stage, use 'change color effect by 25' in a forever loop.",
+              "Add 'wait 0.2 seconds' for the right tempo.",
+              "Play a pop sound on each beat for a club feel.",
+            ],
+          },
+          {
+            title: "Mirror Image",
+            scenario: "Click a sprite and a mirrored copy appears on the other side.",
+            category: "Looks / Motion / Events",
+            blocks: ["when this sprite clicked", "create clone of myself", "when I start as a clone", "set x to (-1 * x position)"],
+            hints: [
+              "Use a clone — set its x to '-1 * x position' to mirror it.",
+              "Use 'set rotation style left-right' and 'point in direction -90' to flip the costume.",
+              "Try also flipping the clone's y for a 4-way mirror.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Sensing Smart",
+    tagline: "Inputs, timers & detection",
+    summary: "Sensing blocks: mouse, keys, timer and distance.",
+    stages: [
+      {
+        name: "Mouse & Keyboard",
+        description: "React to the user's mouse and keys.",
+        stories: [
+          {
+            title: "Mouse Trail",
+            scenario: "The sprite follows the mouse with a slight delay.",
+            category: "Sensing / Motion",
+            blocks: ["forever", "glide 0.2 secs to mouse-pointer"],
+            hints: [
+              "Use 'glide 0.2 secs to mouse-pointer' inside a forever loop.",
+              "Smaller glide times feel snappier, larger feel laggier.",
+              "Add 'change pen color by 2' + pen down for a colorful trail.",
+            ],
+          },
+          {
+            title: "Click Anywhere",
+            scenario: "When the mouse is clicked, the sprite teleports there and says 'Hi'.",
+            category: "Sensing / Motion / Looks",
+            blocks: ["forever", "if <mouse down?> then", "go to mouse-pointer", "say Hi for 1 seconds"],
+            hints: [
+              "Wrap an if inside a forever loop.",
+              "Condition: 'mouse down?' from Sensing.",
+              "Inside: 'go to mouse-pointer' then 'say Hi for 1 seconds'.",
+            ],
+          },
+          {
+            title: "Two-Player Race",
+            scenario: "Player 1 uses W/D keys, Player 2 uses arrow keys. First to the right edge wins.",
+            category: "Events / Sensing / Motion / Control",
+            blocks: ["when d key pressed", "change x by 10", "when right arrow pressed", "change x by 10", "if <x position > 220> then", "say I win! for 2 seconds", "stop all"],
+            hints: [
+              "Two separate sprites with their own scripts.",
+              "Use 'change x by 10' on key presses.",
+              "First sprite to reach x > 220 says 'I win!' and stops everything.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Timing",
+        description: "Use the timer and waits to control pacing.",
+        stories: [
+          {
+            title: "Stopwatch",
+            scenario: "Show the elapsed time. Press space to stop the clock.",
+            category: "Sensing / Variables / Control",
+            blocks: ["reset timer", "forever", "set Time to timer", "if <key space pressed?> then", "stop all"],
+            hints: [
+              "Reset the timer at the start.",
+              "In a forever loop, 'set Time to (timer)' — show that variable on stage.",
+              "If space is pressed, 'stop all' to freeze the clock.",
+            ],
+          },
+          {
+            title: "Reaction Test",
+            scenario: "After a random wait, a sprite appears. Click it as fast as you can — show the reaction time.",
+            category: "Sensing / Control / Variables",
+            blocks: ["wait pick random 2 to 5 seconds", "reset timer", "show", "when this sprite clicked", "say (join Reaction:  timer)", "hide"],
+            hints: [
+              "First, wait a random number of seconds, then 'reset timer' + 'show'.",
+              "When the sprite is clicked, 'say' the timer value.",
+              "Hide afterward and run again for repeated tests.",
+            ],
+          },
+          {
+            title: "Time Trial",
+            scenario: "Move from start to goal — show how long you took.",
+            category: "Sensing / Variables / Events",
+            blocks: ["when ⚑ clicked", "reset timer", "forever", "if <touching Goal?> then", "set FinalTime to timer", "stop all"],
+            hints: [
+              "Reset the timer when the flag is clicked.",
+              "In a forever loop, check 'touching Goal?'.",
+              "When touched, save 'set FinalTime to (timer)' and 'stop all'.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Distance & Detection",
+        description: "Measure distance between sprites and detect collisions.",
+        stories: [
+          {
+            title: "Heat Seeker",
+            scenario: "A heat-seeking missile follows the player; says 'GOT YOU' on contact.",
+            category: "Sensing / Motion / Control",
+            blocks: ["forever", "point towards Player", "move 3 steps", "if <touching Player?> then", "say GOT YOU for 2 seconds", "stop all"],
+            hints: [
+              "Inside forever: 'point towards Player' then 'move 3 steps'.",
+              "Check 'touching Player?' each loop.",
+              "On contact, say the message and stop the game.",
+            ],
+          },
+          {
+            title: "Treasure Hunt",
+            scenario: "The sprite says 'hot' or 'cold' based on distance to a hidden treasure.",
+            category: "Sensing / Operators / Looks",
+            blocks: ["forever", "if <(distance to Treasure) < 50> then", "say Hot! for 1 seconds", "else", "say Cold for 1 seconds"],
+            hints: [
+              "Use 'distance to Treasure' from Sensing.",
+              "Compare it with 50 using the '<' operator.",
+              "Switch between 'Hot!' and 'Cold' messages.",
+            ],
+          },
+          {
+            title: "Proximity Alarm",
+            scenario: "When two sprites get close, both flash red and the alarm plays.",
+            category: "Sensing / Looks / Sound",
+            blocks: ["forever", "if <(distance to Other) < 80> then", "change color effect by 25", "start sound Alarm"],
+            hints: [
+              "Each sprite checks 'distance to Other' in a forever loop.",
+              "If close, 'change color effect' and play a short sound.",
+              "Use 'clear graphic effects' when far apart again.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Data & Lists",
+    tagline: "Variables, lists & loops",
+    summary: "Store and process data with lists and repeat-until loops.",
+    stages: [
+      {
+        name: "Lists Basics",
+        description: "Add and read items from a list.",
+        stories: [
+          {
+            title: "Shopping List",
+            scenario: "Ask the user for 5 items and add them to a list, then say the whole list.",
+            category: "Variables (lists) / Sensing",
+            blocks: ["repeat 5", "ask Item? and wait", "add answer to Cart", "say Cart for 3 seconds"],
+            hints: [
+              "Create a list called 'Cart'.",
+              "Use 'repeat 5' with 'ask Item? and wait' → 'add answer to Cart'.",
+              "Finish with 'say (Cart)' to display the whole list.",
+            ],
+          },
+          {
+            title: "Pick a Winner",
+            scenario: "From a list of names, pick a random winner and announce it.",
+            category: "Variables (lists) / Operators / Looks",
+            blocks: ["say (item (pick random 1 to (length of Names)) of Names) for 3 seconds"],
+            hints: [
+              "Make a list 'Names' with several entries.",
+              "Use 'pick random 1 to (length of Names)' as the index.",
+              "Wrap it in 'item ___ of Names' inside a 'say' block.",
+            ],
+          },
+          {
+            title: "To-Do Tracker",
+            scenario: "Ask the user to type tasks until they type 'done', then count them.",
+            category: "Variables (lists) / Control / Sensing",
+            blocks: ["repeat until <answer = done>", "ask Next task and wait", "add answer to Tasks", "say (join You have  (length of Tasks))"],
+            hints: [
+              "Use 'repeat until' with the condition 'answer = done'.",
+              "Each iteration: ask for a task and add it to 'Tasks'.",
+              "Finish by saying the length of the list.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Searching",
+        description: "Walk through a list to find an item.",
+        stories: [
+          {
+            title: "Name Finder",
+            scenario: "Ask the user for a name and say whether it's in the Names list.",
+            category: "Variables (lists) / Operators / Control",
+            blocks: ["ask Name? and wait", "if <Names contains answer> then", "say Found! for 2 seconds", "else", "say Missing for 2 seconds"],
+            hints: [
+              "Use the 'list contains item' boolean from Variables.",
+              "Wrap it in an if/else.",
+              "Show a positive and negative message accordingly.",
+            ],
+          },
+          {
+            title: "High Score Board",
+            scenario: "Keep a list of top 5 scores. New scores are inserted in order.",
+            category: "Variables (lists) / Operators / Control",
+            blocks: ["set i to 1", "repeat until <(item i of Scores) < newScore>", "change i by 1", "insert newScore at i of Scores", "delete 6 of Scores"],
+            hints: [
+              "Walk down the list until you find a smaller score.",
+              "Use 'insert ___ at i of Scores'.",
+              "After insertion, delete the 6th item to keep only the top 5.",
+            ],
+          },
+          {
+            title: "Anagram Checker",
+            scenario: "Ask for two words and say whether they have the same letters.",
+            category: "Operators / Sensing / Looks",
+            blocks: ["ask Word 1? and wait", "set w1 to answer", "ask Word 2? and wait", "if <(length of w1) = (length of answer)> then", "say Same length"],
+            hints: [
+              "This is a stretch goal — start by comparing lengths.",
+              "Use 'letter (i) of (word)' inside a loop to build sorted versions.",
+              "Two strings are anagrams if their sorted letters match.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Iteration",
+        description: "Process every item in a list.",
+        stories: [
+          {
+            title: "Sum the Numbers",
+            scenario: "Sum every number in a list and say the total.",
+            category: "Variables (lists) / Operators / Control",
+            blocks: ["set Total to 0", "set i to 1", "repeat (length of Nums)", "change Total by (item i of Nums)", "change i by 1", "say Total"],
+            hints: [
+              "Start Total = 0 and i = 1.",
+              "Loop length-of-list times: 'change Total by (item i of Nums)' then 'change i by 1'.",
+              "Finish with 'say Total'.",
+            ],
+          },
+          {
+            title: "Read Each",
+            scenario: "Have the cat say every item from a list, one second each.",
+            category: "Variables (lists) / Control",
+            blocks: ["set i to 1", "repeat (length of List)", "say (item i of List) for 1 seconds", "change i by 1"],
+            hints: [
+              "Use the same pattern: i starts at 1.",
+              "Inside the repeat: 'say (item i of List)' then 'change i by 1'.",
+              "Try removing the wait — what happens? (Items flicker by fast.)",
+            ],
+          },
+          {
+            title: "Average Score",
+            scenario: "Calculate the average of all numbers in a list.",
+            category: "Variables (lists) / Operators",
+            blocks: ["set Sum to 0", "repeat (length of Nums)", "change Sum by (item i of Nums)", "say (Sum / (length of Nums))"],
+            hints: [
+              "Sum every item using the loop from 'Sum the Numbers'.",
+              "Divide Sum by 'length of Nums' to get the average.",
+              "Display it with 'say'.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Audio Magic",
+    tagline: "Music & sound design",
+    summary: "Build melodies, beats and dynamic soundtracks.",
+    stages: [
+      {
+        name: "Note by Note",
+        description: "Compose melodies with the Music extension.",
+        stories: [
+          {
+            title: "Twinkle Twinkle",
+            scenario: "Play the first line of 'Twinkle Twinkle Little Star'.",
+            category: "Music / Events",
+            blocks: ["when ⚑ clicked", "play note 60 for 0.5 beats", "play note 60 for 0.5 beats", "play note 67 for 0.5 beats", "play note 67 for 0.5 beats", "play note 69 for 0.5 beats", "play note 69 for 0.5 beats", "play note 67 for 1 beats"],
+            hints: [
+              "Add the Music extension.",
+              "Notes: C C G G A A G (60, 60, 67, 67, 69, 69, 67).",
+              "Use 0.5-beat notes; finish on a 1-beat note for the long ending.",
+            ],
+          },
+          {
+            title: "Custom Tune",
+            scenario: "Create a custom block 'song' that plays a 5-note melody.",
+            category: "My Blocks / Music",
+            blocks: ["define song", "play note 60 for 0.25 beats", "play note 62 for 0.25 beats", "play note 64 for 0.25 beats", "play note 65 for 0.25 beats", "play note 67 for 0.5 beats"],
+            hints: [
+              "Define 'song' under My Blocks.",
+              "Add 5 'play note' blocks inside the definition.",
+              "Call 'song' from the green-flag script.",
+            ],
+          },
+          {
+            title: "Tempo Master",
+            scenario: "Use the up/down arrows to speed up or slow down the song.",
+            category: "Music / Events",
+            blocks: ["when up arrow pressed", "change tempo by 20", "when down arrow pressed", "change tempo by -20"],
+            hints: [
+              "The 'tempo' is a built-in Music variable measured in BPM.",
+              "Two scripts: up arrow adds 20, down arrow subtracts 20.",
+              "Display 'tempo' on the stage to see it change live.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Beat Machine",
+        description: "Layer drums for a beat.",
+        stories: [
+          {
+            title: "Four on the Floor",
+            scenario: "Play a steady kick-drum beat at 120 BPM.",
+            category: "Music / Control",
+            blocks: ["set tempo to 120", "forever", "play drum 1 for 0.5 beats"],
+            hints: [
+              "Set tempo to 120 at the start.",
+              "Inside a forever loop, 'play drum 1 for 0.5 beats'.",
+              "Try playing drum 2 (snare) every other beat for a kick+snare pattern.",
+            ],
+          },
+          {
+            title: "Drum & Bass",
+            scenario: "Two sprites: one plays a drum pattern, the other plays a bassline.",
+            category: "Music / Events",
+            blocks: ["broadcast start", "when I receive start", "forever", "play drum 1 for 0.25 beats", "play note 36 for 0.25 beats"],
+            hints: [
+              "On flag, 'broadcast start' so both sprites begin together.",
+              "Drum sprite loops drum hits; bass sprite loops low notes (36).",
+              "Synchronize tempo with 'set tempo to ___' at the start of each sprite.",
+            ],
+          },
+          {
+            title: "Make a Song",
+            scenario: "Combine drums, bass, and melody into a short song that plays on flag click.",
+            category: "Music / My Blocks / Events",
+            blocks: ["when ⚑ clicked", "set tempo to 100", "repeat 4", "drums", "bass", "melody"],
+            hints: [
+              "Create 'drums', 'bass', 'melody' custom blocks.",
+              "Use 'repeat 4' to play 4 measures.",
+              "Inside each custom block, sequence the appropriate notes/drums.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Sound Design",
+        description: "Record/use sounds and effects.",
+        stories: [
+          {
+            title: "Echo Effect",
+            scenario: "Play the same sound at three different volumes for an echo.",
+            category: "Sound / Control",
+            blocks: ["set volume to 100", "start sound Pop", "wait 0.3 seconds", "set volume to 60", "start sound Pop", "wait 0.3 seconds", "set volume to 30", "start sound Pop"],
+            hints: [
+              "Use 'start sound' so the next sound can overlap.",
+              "Lower the volume between plays for a fading echo.",
+              "Try changing the wait length to widen or tighten the echo.",
+            ],
+          },
+          {
+            title: "Pitch Bender",
+            scenario: "Hold the right arrow to raise the pitch, left to lower it.",
+            category: "Sound / Events",
+            blocks: ["when right arrow pressed", "change pitch effect by 25", "when left arrow pressed", "change pitch effect by -25", "when ⚑ clicked", "forever", "play sound Meow until done"],
+            hints: [
+              "Loop 'play sound Meow until done' in the background.",
+              "Two arrow-key scripts: 'change pitch effect by ±25'.",
+              "Reset with 'clear sound effects' to start fresh.",
+            ],
+          },
+          {
+            title: "Beat Box",
+            scenario: "Press keys 1–4 to trigger different drum samples.",
+            category: "Sound / Events",
+            blocks: ["when 1 key pressed", "start sound Drum-Kick", "when 2 key pressed", "start sound Drum-Snare", "when 3 key pressed", "start sound Hi-Hat", "when 4 key pressed", "start sound Clap"],
+            hints: [
+              "Each key gets its own event hat.",
+              "Use 'start sound' so beats can overlap.",
+              "Record yourself jamming, then save the project!",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Art with Code",
+    tagline: "Pen, geometry & fractals",
+    summary: "Draw shapes, spirals, and fractals using the Pen extension.",
+    stages: [
+      {
+        name: "Lines & Shapes",
+        description: "Basic pen drawing with primitive shapes.",
+        stories: [
+          {
+            title: "Star Burst",
+            scenario: "Draw a 5-point star using the Pen extension.",
+            category: "Pen / Motion / Control",
+            blocks: ["pen down", "repeat 5", "move 100 steps", "turn ↻ 144 degrees", "pen up"],
+            hints: [
+              "Add the Pen extension.",
+              "Use 'repeat 5' with 'move 100 steps' and 'turn 144°'.",
+              "144° is 360°/2.5 — that's the magic angle for a 5-point star.",
+            ],
+          },
+          {
+            title: "Circle Pack",
+            scenario: "Draw a circle by repeating tiny moves and turns.",
+            category: "Pen / Motion / Control",
+            blocks: ["pen down", "repeat 360", "move 1 steps", "turn ↻ 1 degrees", "pen up"],
+            hints: [
+              "Drawing a circle = 360 small moves + 1° turns.",
+              "Move 1 step then turn 1 degree, 360 times.",
+              "Change move-size for a larger circle (try 2 steps).",
+            ],
+          },
+          {
+            title: "Triangle Stamp",
+            scenario: "Draw 6 triangles around a central point.",
+            category: "Pen / Motion / Control",
+            blocks: ["repeat 6", "repeat 3", "move 80 steps", "turn ↻ 120 degrees", "turn ↻ 60 degrees"],
+            hints: [
+              "Outer loop runs 6 times — one per triangle.",
+              "Inner loop draws the triangle (3 sides, 120° each).",
+              "After each triangle, turn 60° to spread them around the center.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Spirals & Patterns",
+        description: "Build complex patterns from simple rules.",
+        stories: [
+          {
+            title: "Square Spiral",
+            scenario: "Draw a spiral by increasing the side length each step.",
+            category: "Pen / Variables / Control",
+            blocks: ["set side to 5", "repeat 50", "move (side) steps", "turn ↻ 90 degrees", "change side by 3"],
+            hints: [
+              "Start with 'side = 5'.",
+              "Each repeat: move (side), turn 90°, then 'change side by 3'.",
+              "Try 91° instead of 90° for a curvy spiral.",
+            ],
+          },
+          {
+            title: "Rainbow Spiral",
+            scenario: "Like Square Spiral but each line is a different color.",
+            category: "Pen / Variables / Control",
+            blocks: ["set side to 5", "repeat 80", "change pen color by 3", "move (side) steps", "turn ↻ 91 degrees", "change side by 2"],
+            hints: [
+              "Start with 'change pen color by 3' inside the loop.",
+              "Use 91° for a slightly twisted spiral.",
+              "Increase 'side' so the lines get longer each turn.",
+            ],
+          },
+          {
+            title: "Mandala",
+            scenario: "Draw a symmetrical flower-like pattern.",
+            category: "Pen / Motion / Control",
+            blocks: ["repeat 36", "repeat 36", "move 2 steps", "turn ↻ 10 degrees", "turn ↻ 10 degrees"],
+            hints: [
+              "Outer loop spins the design 36 times around the center.",
+              "Inner loop draws a small circle each time.",
+              "Add color changes for a magical look.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Fractals",
+        description: "Recursion-style patterns using custom blocks.",
+        stories: [
+          {
+            title: "Tree Branches",
+            scenario: "Create a custom 'branch' block that draws a tree.",
+            category: "My Blocks / Pen / Operators",
+            blocks: ["define branch length depth", "if <depth = 0> then", "stop this script", "move (length) steps", "turn ↻ 25", "branch (length * 0.7) (depth - 1)", "turn ↺ 50", "branch (length * 0.7) (depth - 1)"],
+            hints: [
+              "Define 'branch' with two inputs: length and depth.",
+              "Base case: if depth = 0, stop.",
+              "Otherwise draw, then recursively call 'branch' for the two sub-branches.",
+            ],
+          },
+          {
+            title: "Koch Snowflake",
+            scenario: "Draw a snowflake fractal using a recursive side block.",
+            category: "My Blocks / Pen / Operators",
+            blocks: ["define side length depth", "if <depth = 0> then", "move (length) steps", "stop this script", "side (length / 3) (depth - 1)", "turn ↺ 60", "side (length / 3) (depth - 1)"],
+            hints: [
+              "Each side has 4 sub-sides at 60° angles.",
+              "Recursive call: 'side (length/3) (depth-1)'.",
+              "Call side 3 times with 120° between for the full snowflake.",
+            ],
+          },
+          {
+            title: "Sierpinski Triangle",
+            scenario: "Plot the Sierpinski Triangle using the chaos game algorithm.",
+            category: "Pen / Operators / Variables",
+            blocks: ["repeat 5000", "set p to pick random 1 to 3", "go to ((x + corner_x[p]) / 2) , ((y + corner_y[p]) / 2)", "pen down"],
+            hints: [
+              "Pick 3 corner points (top, bottom-left, bottom-right).",
+              "Each step: pick a random corner, move halfway toward it, stamp a dot.",
+              "After thousands of iterations, the Sierpinski pattern appears.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Story Engine",
+    tagline: "Cutscenes & branching dialogue",
+    summary: "Build interactive stories with choices and dialogue.",
+    stages: [
+      {
+        name: "Cutscene",
+        description: "Sequence scenes with broadcasts.",
+        stories: [
+          {
+            title: "Opening Scene",
+            scenario: "When the flag is clicked, show a title, then fade to the first scene.",
+            category: "Looks / Events / Control",
+            blocks: ["when ⚑ clicked", "switch backdrop to title", "wait 2 seconds", "switch backdrop to scene1", "broadcast start"],
+            hints: [
+              "Switch to the title backdrop first.",
+              "Wait, then switch to 'scene1' and broadcast 'start'.",
+              "Sprites listen with 'when I receive start' to enter the scene.",
+            ],
+          },
+          {
+            title: "Two Characters Meet",
+            scenario: "Two sprites enter from opposite sides, meet in the middle, and exchange greetings.",
+            category: "Events / Motion / Looks",
+            blocks: ["when I receive start", "glide 2 secs to x: 0 y: 0", "say Hello! for 2 seconds", "broadcast reply"],
+            hints: [
+              "Each sprite glides to the center.",
+              "Sprite A says 'Hello!' then broadcasts 'reply'.",
+              "Sprite B's 'when I receive reply' says 'Hi back!'.",
+            ],
+          },
+          {
+            title: "Scene Transition",
+            scenario: "After the dialogue, fade to black and switch to a new backdrop.",
+            category: "Looks / Events",
+            blocks: ["repeat 25", "change brightness effect by -4", "switch backdrop to scene2", "repeat 25", "change brightness effect by 4"],
+            hints: [
+              "Fade out by lowering 'brightness effect'.",
+              "Switch backdrop while dark.",
+              "Fade back in with 'change brightness effect by 4'.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Choices",
+        description: "Branch the story based on the user's choice.",
+        stories: [
+          {
+            title: "Pick a Path",
+            scenario: "Ask 'Forest or Castle?' and show a different scene for each answer.",
+            category: "Sensing / Control / Looks",
+            blocks: ["ask Forest or Castle? and wait", "if <answer = Forest> then", "switch backdrop to forest", "else", "switch backdrop to castle"],
+            hints: [
+              "Ask the user with 'ask … and wait'.",
+              "Use if/else to switch backdrops.",
+              "Lowercase compare with the 'join' operator if you want flexibility.",
+            ],
+          },
+          {
+            title: "Three Doors",
+            scenario: "Show three doors. Click one to reveal what's behind.",
+            category: "Events / Looks",
+            blocks: ["when this sprite clicked", "broadcast door1", "when I receive door1", "switch backdrop to room1"],
+            hints: [
+              "Each door is its own sprite with a click handler that broadcasts.",
+              "Stage listens with 'when I receive door1', 'door2', 'door3' and switches backdrops.",
+              "Add 'play sound Open' when entering for extra feel.",
+            ],
+          },
+          {
+            title: "Multiple Endings",
+            scenario: "Based on a variable 'Karma', show one of three endings.",
+            category: "Variables / Control / Events",
+            blocks: ["if <Karma > 5> then", "switch backdrop to happyEnding", "else", "if <Karma < -5> then", "switch backdrop to badEnding", "else", "switch backdrop to neutralEnding"],
+            hints: [
+              "Track a Karma variable throughout your story.",
+              "At the end, use nested if/else to choose the ending.",
+              "Try 'broadcast credits' to roll credits after the ending screen.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Dialogue Trees",
+        description: "Branch dialogues with multiple responses.",
+        stories: [
+          {
+            title: "Friendly NPC",
+            scenario: "Talk to a villager. Choose 'Quest' or 'Bye' — they react differently.",
+            category: "Sensing / Control",
+            blocks: ["ask Quest or Bye? and wait", "if <answer = Quest> then", "say Find the lost cat for 3 seconds", "else", "say Safe travels for 2 seconds"],
+            hints: [
+              "Ask the player to type a keyword.",
+              "Branch with if/else.",
+              "Add a third option for 'help' that explains the controls.",
+            ],
+          },
+          {
+            title: "Romance Path",
+            scenario: "After 3 conversations, a friend variable affects the ending.",
+            category: "Variables / Control",
+            blocks: ["change Friendship by 1", "if <Friendship >= 3> then", "say Best friends! for 3 seconds", "else", "say See you around for 2 seconds"],
+            hints: [
+              "Increment 'Friendship' each time the player picks a friendly option.",
+              "Compare with >= to a threshold.",
+              "Show different dialogue when the threshold is crossed.",
+            ],
+          },
+          {
+            title: "Mystery Interrogation",
+            scenario: "A detective sprite cycles through 4 suspects, asking each one a question.",
+            category: "Events / Sensing / Variables / Control",
+            blocks: ["set suspect to 1", "repeat 4", "broadcast interrogate", "ask Lie or Truth? and wait", "if <answer = Truth> then", "change Trust by 1", "change suspect by 1"],
+            hints: [
+              "Loop over 4 suspects with a variable index.",
+              "Broadcast 'interrogate' so the right suspect responds.",
+              "Track a Trust variable to determine the case outcome.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Physics Playground",
+    tagline: "Gravity, jumps & collisions",
+    summary: "Simulate motion: gravity, jumping, friction and collisions.",
+    stages: [
+      {
+        name: "Gravity",
+        description: "Make objects fall and bounce.",
+        stories: [
+          {
+            title: "Falling Apple",
+            scenario: "The apple accelerates downward and stops at the floor.",
+            category: "Variables / Motion / Control / Sensing",
+            blocks: ["set vy to 0", "forever", "change vy by -1", "change y by vy", "if <y position < -150> then", "set vy to 0", "set y to -150"],
+            hints: [
+              "Create 'vy' (velocity y) starting at 0.",
+              "Each frame: subtract 1 from vy (gravity), then 'change y by vy'.",
+              "When the apple hits the floor, zero out vy and clamp y.",
+            ],
+          },
+          {
+            title: "Bouncing Ball",
+            scenario: "A ball falls and bounces with a little energy loss each bounce.",
+            category: "Variables / Motion / Control",
+            blocks: ["forever", "change vy by -1", "change y by vy", "if <y position < -150> then", "set vy to (vy * -0.8)"],
+            hints: [
+              "Same gravity + position update as Falling Apple.",
+              "When hitting the floor, reverse vy and multiply by 0.8 (energy loss).",
+              "After enough bounces it settles on the floor.",
+            ],
+          },
+          {
+            title: "Pendulum Swing",
+            scenario: "Simulate a swinging pendulum using angle and angular velocity.",
+            category: "Variables / Motion / Operators / Control",
+            blocks: ["set angle to 30", "set vAngle to 0", "forever", "change vAngle by (- angle / 10)", "change angle by vAngle"],
+            hints: [
+              "Treat 'angle' like position and 'vAngle' like velocity.",
+              "Acceleration toward equilibrium = -angle / 10.",
+              "Multiply vAngle by 0.99 each step for friction.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Jumping",
+        description: "Build a platformer jump.",
+        stories: [
+          {
+            title: "Jump on Space",
+            scenario: "Press space to jump; gravity pulls the sprite back down.",
+            category: "Events / Variables / Motion",
+            blocks: ["when space key pressed", "if <onGround = 1> then", "set vy to 15", "forever", "change vy by -1", "change y by vy"],
+            hints: [
+              "Use 'vy' for vertical velocity.",
+              "On space, only jump if 'onGround = 1' (a ground check).",
+              "Inside a forever loop, apply gravity each tick.",
+            ],
+          },
+          {
+            title: "Double Jump",
+            scenario: "Allow the sprite to jump twice before landing.",
+            category: "Variables / Events / Control",
+            blocks: ["when space key pressed", "if <jumps < 2> then", "set vy to 15", "change jumps by 1"],
+            hints: [
+              "Track a 'jumps' variable.",
+              "Reset 'jumps' to 0 when the sprite lands.",
+              "Allow another jump only when 'jumps < 2'.",
+            ],
+          },
+          {
+            title: "Platform Hopper",
+            scenario: "The sprite can stand on multiple platforms.",
+            category: "Sensing / Variables / Motion / Control",
+            blocks: ["forever", "if <touching Platform?> then", "set vy to 0", "set onGround to 1", "else", "change vy by -1", "set onGround to 0"],
+            hints: [
+              "Detect platforms with 'touching Platform?'.",
+              "On contact, zero gravity and set onGround = 1.",
+              "Otherwise, apply gravity and clear onGround.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Collisions",
+        description: "React when sprites touch.",
+        stories: [
+          {
+            title: "Brick Breaker",
+            scenario: "A ball bounces off bricks. Each brick disappears on contact.",
+            category: "Sensing / Variables / Motion / Control",
+            blocks: ["forever", "if <touching Brick?> then", "set vy to (vy * -1)", "broadcast hit"],
+            hints: [
+              "Ball: reverse vy on brick contact and broadcast 'hit'.",
+              "Brick: 'when I receive hit' + 'if touching Ball?' then 'hide'.",
+              "Track Score with each broken brick.",
+            ],
+          },
+          {
+            title: "Push-Box Puzzle",
+            scenario: "The player can push a box across the stage.",
+            category: "Events / Sensing / Motion",
+            blocks: ["when right arrow pressed", "if <touching Box?> then", "broadcast pushRight", "change x by 10", "when I receive pushRight", "change x by 10"],
+            hints: [
+              "Player moves with arrow keys.",
+              "If touching the Box, broadcast 'pushRight'.",
+              "Box listens and changes x by the same amount.",
+            ],
+          },
+          {
+            title: "Top-Down Bumper",
+            scenario: "Two sprites that bump off each other when they collide.",
+            category: "Sensing / Variables / Motion",
+            blocks: ["forever", "if <touching Other?> then", "set vx to (vx * -1)", "set vy to (vy * -1)"],
+            hints: [
+              "Each sprite has its own vx, vy.",
+              "On collision, flip both velocities.",
+              "Move slightly apart afterward to avoid getting stuck.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "AI & Bots",
+    tagline: "Chatbots, speech & translate",
+    summary: "Use Text-to-Speech and Translate to make smart-feeling bots.",
+    stages: [
+      {
+        name: "Chatbots",
+        description: "Hold a back-and-forth conversation.",
+        stories: [
+          {
+            title: "Echo Bot",
+            scenario: "Whatever the user types, the bot reads it aloud.",
+            category: "Sensing / Text-to-Speech",
+            blocks: ["forever", "ask Say something and wait", "speak answer"],
+            hints: [
+              "Add the Text-to-Speech extension.",
+              "Inside a forever loop, ask and speak the answer.",
+              "Press the stop button when finished — it's an infinite loop.",
+            ],
+          },
+          {
+            title: "Mood Mirror",
+            scenario: "Ask 'How are you?' and respond differently based on positive vs negative words.",
+            category: "Sensing / Operators / TTS / Control",
+            blocks: ["ask How are you? and wait", "if <answer contains happy> then", "speak Glad to hear that!", "if <answer contains sad> then", "speak I'm here for you"],
+            hints: [
+              "Use 'answer contains __' from Operators.",
+              "Branch with multiple ifs for different feelings.",
+              "Add an else for neutral replies.",
+            ],
+          },
+          {
+            title: "Knowledge Bot",
+            scenario: "The bot answers 3 trivia questions correctly using a list-based memory.",
+            category: "Variables (lists) / Operators / TTS / Control",
+            blocks: ["ask What's the capital of France? and wait", "if <answer = Paris> then", "speak Correct!", "else", "speak Nope, it's Paris"],
+            hints: [
+              "Hardcode 3 Q&A pairs as if/else blocks.",
+              "Use 'lowercase' on the answer for fuzzy matching.",
+              "For bonus: store Qs/As in two lists and loop through them.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Translate",
+        description: "Use the Translate extension for language tasks.",
+        stories: [
+          {
+            title: "World Greeter",
+            scenario: "Cycle through 'Hello' in 5 languages on flag click.",
+            category: "Translate / TTS / Control",
+            blocks: ["repeat 5", "speak (translate Hello to (item i of Langs))"],
+            hints: [
+              "Store 5 language codes in a list 'Langs' (es, fr, ja, hi, sw).",
+              "Loop through them with index i, translating and speaking each one.",
+              "Use 'set voice to' to change voices for variety.",
+            ],
+          },
+          {
+            title: "Travel Phrasebook",
+            scenario: "User picks a language; the bot says 'where is the bathroom?' translated.",
+            category: "Translate / Sensing / TTS",
+            blocks: ["ask Language code? and wait", "speak (translate Where is the bathroom? to answer)"],
+            hints: [
+              "Translate any English phrase to the language code the user types.",
+              "Pair with TTS for an audio phrasebook.",
+              "Add error handling: if 'answer' is empty, default to 'es'.",
+            ],
+          },
+          {
+            title: "Story in 2 Languages",
+            scenario: "Tell a 3-sentence story in English, then again translated.",
+            category: "Translate / TTS / Control",
+            blocks: ["set story to Once upon a time...", "speak story", "speak (translate story to French)"],
+            hints: [
+              "Set 'story' to your sentence using a variable.",
+              "Speak it first in English.",
+              "Speak the translated version after a pause.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Game AI",
+        description: "Sprites with simple intelligence.",
+        stories: [
+          {
+            title: "Chaser",
+            scenario: "An enemy chases the player; jumps to a new spot when the player escapes.",
+            category: "Sensing / Motion / Control",
+            blocks: ["forever", "point towards Player", "move 2 steps", "if <(distance to Player) > 300> then", "go to random position"],
+            hints: [
+              "Always point and move toward the player.",
+              "If the distance is too big, teleport to a new spot.",
+              "Vary movement speed for harder enemies.",
+            ],
+          },
+          {
+            title: "Patrol",
+            scenario: "A guard walks back and forth between two points.",
+            category: "Motion / Control",
+            blocks: ["forever", "glide 2 secs to x: -100 y: 0", "glide 2 secs to x: 100 y: 0"],
+            hints: [
+              "Two glides in a forever loop create a patrol.",
+              "Add 'switch costume' to make the guard turn.",
+              "If the guard sees the player ('distance < 80'), broadcast 'alarm'.",
+            ],
+          },
+          {
+            title: "Smart Pong AI",
+            scenario: "A computer paddle tracks the ball's y position.",
+            category: "Variables / Motion / Control",
+            blocks: ["forever", "set y to ([y position of Ball] * 0.9)"],
+            hints: [
+              "Use 'y position of Ball' to find the ball's vertical position.",
+              "Multiply by 0.9 so the AI lags slightly (otherwise it never loses).",
+              "Set the paddle's y to the result every frame.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------
+  {
+    title: "Multiplayer & Web",
+    tagline: "Cloud variables & sharing",
+    summary: "Cloud variables, simple leaderboards, and sharing projects.",
+    stages: [
+      {
+        name: "Cloud Vars",
+        description: "Use ☁ cloud variables (numbers only, signed-in users).",
+        stories: [
+          {
+            title: "Shared Score",
+            scenario: "A cloud variable 'Best' updates whenever a player beats the record.",
+            category: "Variables (cloud) / Operators",
+            blocks: ["if <Score > ☁ Best> then", "set ☁ Best to Score"],
+            hints: [
+              "Make a cloud variable '☁ Best' (only available signed in on Scratch.mit.edu).",
+              "Compare local Score to ☁ Best and update when better.",
+              "Show ☁ Best on stage so everyone can see the world record.",
+            ],
+          },
+          {
+            title: "Visitor Counter",
+            scenario: "Each time someone runs the project, increment a cloud counter.",
+            category: "Variables (cloud) / Events",
+            blocks: ["when ⚑ clicked", "change ☁ Visits by 1"],
+            hints: [
+              "Make '☁ Visits' as a cloud variable.",
+              "On flag click, increment by 1.",
+              "Display it as a big number on the stage.",
+            ],
+          },
+          {
+            title: "Top 10 Board",
+            scenario: "Maintain a top-10 leaderboard using 10 cloud variables.",
+            category: "Variables (cloud) / Operators",
+            blocks: ["if <Score > ☁ Score10> then", "set ☁ Score10 to Score"],
+            hints: [
+              "Create ☁ Score1 through ☁ Score10.",
+              "Insert the new score in the right position, shifting others down.",
+              "Cloud variables only store numbers — encode names as digit codes if needed.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Share & Remix",
+        description: "Prepare projects for sharing on the Scratch community.",
+        stories: [
+          {
+            title: "Add Instructions",
+            scenario: "Add a Notes & Credits section explaining how to play.",
+            category: "Project setup",
+            blocks: ["Project Notes", "Instructions", "Credits"],
+            hints: [
+              "On Scratch.mit.edu, edit the Notes & Credits sections of the project.",
+              "Explain controls and goal in 2–3 sentences.",
+              "Credit any sprites/sounds you didn't make.",
+            ],
+          },
+          {
+            title: "Custom Thumbnail",
+            scenario: "Pose your sprites and set a great cover screenshot.",
+            category: "Project setup",
+            blocks: ["Backdrop", "Sprites", "Snapshot"],
+            hints: [
+              "Pose the sprites in an attractive composition.",
+              "Click the camera icon next to the green flag to set the thumbnail.",
+              "A clear thumbnail boosts engagement on Scratch.",
+            ],
+          },
+          {
+            title: "Remix Challenge",
+            scenario: "Find an existing project on Scratch and remix it with your own twist.",
+            category: "Community",
+            blocks: ["Remix"],
+            hints: [
+              "Browse https://scratch.mit.edu/explore for inspiration.",
+              "Click 'Remix' to fork the project under your account.",
+              "Change at least 3 things: sprites, backdrop, or scripts.",
+            ],
+          },
+        ],
+      },
+      {
+        name: "Polish & Publish",
+        description: "Finish your portfolio.",
+        stories: [
+          {
+            title: "Title Screen",
+            scenario: "Add a polished title screen with a Play button.",
+            category: "Looks / Events",
+            blocks: ["when ⚑ clicked", "switch backdrop to title", "when this sprite clicked", "broadcast play", "switch backdrop to level1"],
+            hints: [
+              "Start on a title backdrop with logo and a Play sprite.",
+              "Clicking Play broadcasts 'play' and switches to level1.",
+              "Hide the Play button after clicking.",
+            ],
+          },
+          {
+            title: "Game Over Screen",
+            scenario: "Show a Game Over screen with the score and a Retry button.",
+            category: "Events / Looks / Variables",
+            blocks: ["broadcast gameover", "when I receive gameover", "switch backdrop to gameover", "say (join Score:  Score)"],
+            hints: [
+              "Broadcast 'gameover' when the player loses.",
+              "Stage switches backdrop and a sprite shows the final score.",
+              "A Retry button broadcasts 'restart' to reset variables.",
+            ],
+          },
+          {
+            title: "Capstone Project",
+            scenario: "Build a complete game combining everything you've learned: sprites, sounds, variables, levels, and a polished UI.",
+            category: "All categories",
+            blocks: ["sprites", "events", "control", "sensing", "operators", "variables", "looks", "sound", "motion", "my blocks"],
+            hints: [
+              "Outline 3 levels of increasing difficulty.",
+              "Reuse custom blocks ('My Blocks') for repeating logic.",
+              "Test on a friend — refine controls based on their feedback.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 // Flat list of stories with their levelIndex/stageIndex/storyIndex/globalIndex,

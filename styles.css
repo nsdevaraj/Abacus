@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Readability overrides
+   ---------------------------------------------------------------------------
+   The UI used Tailwind's slate-400/500 for secondary copy on a soft pastel
+   background. That combination sits below the WCAG AA contrast threshold on
+   many displays and renders as low-contrast "ghost" text (e.g. the
+   "Collect stars to become a Hero" and "Simple 1-digit addition." lines).
+   These rules override the generated utilities — same selector specificity,
+   declared AFTER Tailwind's layer so they win the cascade — and lift muted
+   text to accessible contrast in both themes.
+   --------------------------------------------------------------------------- */
+
+/* Light theme: nudge low-contrast greys toward slate-700/600. */
+.text-slate-400 { color: #475569; }   /* was #94a3b8 — tiny eyebrow labels  */
+.text-slate-500 { color: #334155; }   /* was #64748b — body copy            */
+.text-slate-600 { color: #1f2937; }   /* was #475569 — subheaders           */
+
+/* Dark theme: brighten the same tokens. The .dark class is toggled on <html>. */
+.dark .dark\:text-slate-400 { color: #cbd5e1; } /* was #94a3b8 */
+.dark .dark\:text-slate-500 { color: #94a3b8; } /* was #64748b */
+.dark .text-slate-400 { color: #cbd5e1; }
+.dark .text-slate-500 { color: #cbd5e1; }
+
+/* Make tiny "eyebrow" labels (the 10–11px uppercase tracked ones) heavier so
+   they remain legible after the colour bump.                               */
+.text-\[10px\],
+.text-\[11px\] {
+  font-weight: 700;
+}
+
+/* Slightly larger minimum size for descriptive paragraphs that previously
+   collapsed to text-xs (12px) on mobile.                                   */
+@media (max-width: 767px) {
+  p.text-xs { font-size: 13px; line-height: 1.45; }
+}

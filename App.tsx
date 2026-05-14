@@ -12,6 +12,9 @@ import BottomNav from './components/BottomNav';
 const App = () => {
   const { state, actions } = useAbacusGame();
 
+  // While focus mode is on AND we're actively practicing, hide decorative chrome.
+  const distractionFree = state.focusMode && state.mode === 'practice';
+
   if (state.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-indigo-300 font-semibold text-base">
@@ -27,11 +30,13 @@ const App = () => {
     <div className="min-h-screen flex flex-col 2xl:flex-row text-slate-800 font-sans dark:text-slate-100 overflow-hidden relative">
 
       {/* Subtle decorative background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-indigo-300/25 dark:bg-indigo-500/10 blur-3xl" />
-        <div className="absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-pink-300/20 dark:bg-pink-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 left-1/4 w-[26rem] h-[26rem] rounded-full bg-amber-200/25 dark:bg-amber-400/10 blur-3xl" />
-      </div>
+      {!distractionFree && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-indigo-300/25 dark:bg-indigo-500/10 blur-3xl" />
+          <div className="absolute top-1/3 -right-40 w-[28rem] h-[28rem] rounded-full bg-pink-300/20 dark:bg-pink-500/10 blur-3xl" />
+          <div className="absolute -bottom-40 left-1/4 w-[26rem] h-[26rem] rounded-full bg-amber-200/25 dark:bg-amber-400/10 blur-3xl" />
+        </div>
+      )}
 
       {/* Mobile Sidebar Overlay */}
       {state.mobileMenuOpen && (
@@ -96,13 +101,18 @@ const App = () => {
             <ProfileMode
               darkMode={state.darkMode}
               setDarkMode={actions.setDarkMode}
+              classReminders={state.classReminders}
+              setClassReminders={actions.setClassReminders}
+              focusMode={state.focusMode}
+              setFocusMode={actions.setFocusMode}
+              personalBest={state.personalBest}
               handleResetAll={actions.handleResetAll}
               globalCoins={state.globalCoins}
             />
           )}
         </div>
 
-        <BottomNav mode={state.mode} setMode={actions.setMode} />
+        <BottomNav mode={state.mode} setMode={actions.setMode} hidden={distractionFree} />
 
         {/* Practice Mode Logic: 
             If practiceType is 'mental', PracticeMode will automatically hide the abacus and numbers 

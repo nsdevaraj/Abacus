@@ -49,7 +49,7 @@ const CalendarMode: React.FC<CalendarModeProps> = ({ logs }) => {
            <CalendarCheck className="w-7 h-7 md:w-9 md:h-9 text-indigo-600" />
            Training Log
          </h3>
-         <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 font-medium">Track your daily brain workouts</p>
+         <p className="text-base md:text-lg text-slate-700 dark:text-slate-200 font-medium">Track your daily brain workouts</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6 md:gap-8">

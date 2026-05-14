@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, ENGLISH_SYLLABUS, CODING_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
+import { JUNIOR_SYLLABUS, SENIOR_SYLLABUS, CODING_SYLLABUS, ALL_LEVELS, getProblemForIndex } from '../utils/syllabus';
 import { Problem, UserProgress, DailyLog, AppMode } from '../types';
 import { useDatabase } from './useDatabase';
-import { STORAGE_KEYS } from '../utils/constants';
+import { STORAGE_KEYS, CLASS_REMINDER_HOUR } from '../utils/constants';
 
 export const useAbacusGame = () => {
   const db = useDatabase();
@@ -17,7 +17,7 @@ export const useAbacusGame = () => {
     streak: 0
   }));
 
-  const [learningPath, setLearningPath] = useState<'junior' | 'senior' | 'english' | 'coding'>('junior');
+  const [learningPath, setLearningPath] = useState<'junior' | 'senior' | 'coding'>('junior');
   const [currentLevelId, setCurrentLevelId] = useState<number>(1);
   const [masterSeed, setMasterSeed] = useState<number>(0);
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -27,11 +27,26 @@ export const useAbacusGame = () => {
   // Navigation & Game Modes
   const [mode, setMode] = useState<AppMode>('map');
   const [practiceType, setPracticeType] = useState<'visual' | 'mental'>('visual');
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
+  const readBoolPref = (key: string, defaultVal: boolean): boolean => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.DARK_MODE) === 'true';
+      const stored = localStorage.getItem(key);
+      if (stored === null) return defaultVal;
+      return stored === 'true';
     } catch {
-      return false;
+      return defaultVal;
+    }
+  };
+
+  const [darkMode, setDarkMode] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.DARK_MODE, true));
+  const [classReminders, setClassReminders] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.CLASS_REMINDERS, false));
+  const [focusMode, setFocusMode] = useState<boolean>(() => readBoolPref(STORAGE_KEYS.FOCUS_MODE, false));
+  const [personalBest, setPersonalBest] = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.PERSONAL_BEST);
+      const n = stored ? parseInt(stored, 10) : 0;
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch {
+      return 0;
     }
   });
 
@@ -39,7 +54,77 @@ export const useAbacusGame = () => {
     try {
       localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(darkMode));
     } catch {}
+    // Sync class on <html> so `dark:` variants and CSS `.dark body` rules apply globally.
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', darkMode);
+    }
   }, [darkMode]);
+
+  // Persist focus mode + reflect on <html> so CSS / components can react.
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEYS.FOCUS_MODE, String(focusMode)); } catch {}
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('focus-mode', focusMode);
+    }
+  }, [focusMode]);
+
+  // Persist personal best.
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEYS.PERSONAL_BEST, String(personalBest)); } catch {}
+    if (!loading) db.setItem(STORAGE_KEYS.PERSONAL_BEST, String(personalBest));
+  }, [personalBest, loading]);
+
+  // Class reminders: request notification permission and schedule a daily reminder.
+  const reminderTimerRef = useRef<number | null>(null);
+  const clearReminderTimer = () => {
+    if (reminderTimerRef.current !== null) {
+      window.clearTimeout(reminderTimerRef.current);
+      reminderTimerRef.current = null;
+    }
+  };
+  const scheduleNextReminder = () => {
+    clearReminderTimer();
+    const now = new Date();
+    const next = new Date();
+    next.setHours(CLASS_REMINDER_HOUR, 0, 0, 0);
+    if (next.getTime() <= now.getTime()) {
+      next.setDate(next.getDate() + 1);
+    }
+    const delay = next.getTime() - now.getTime();
+    reminderTimerRef.current = window.setTimeout(() => {
+      try {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          new Notification('Abacus class starting soon', {
+            body: 'Your next live session begins shortly. Time to warm up!',
+            icon: '/favicon.ico',
+          });
+        }
+      } catch {}
+      scheduleNextReminder();
+    }, delay);
+  };
+
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEYS.CLASS_REMINDERS, String(classReminders)); } catch {}
+    if (!classReminders) {
+      clearReminderTimer();
+      return;
+    }
+    if (typeof Notification === 'undefined') return;
+    const arm = () => scheduleNextReminder();
+    if (Notification.permission === 'granted') {
+      arm();
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') arm();
+        else setClassReminders(false);
+      }).catch(() => setClassReminders(false));
+    } else {
+      // Denied: keep toggle off so UI matches reality.
+      setClassReminders(false);
+    }
+    return () => clearReminderTimer();
+  }, [classReminders]);
   
   const [abacusValue, setAbacusValue] = useState<number>(0);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -57,7 +142,7 @@ export const useAbacusGame = () => {
   const [globalCoins, setGlobalCoins] = useState<number>(0);
   const [globalStreak, setGlobalStreak] = useState<number>(0);
 
-  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : learningPath === 'english' ? ENGLISH_SYLLABUS : CODING_SYLLABUS;
+  const currentSyllabus = learningPath === 'junior' ? JUNIOR_SYLLABUS : learningPath === 'senior' ? SENIOR_SYLLABUS : CODING_SYLLABUS;
 
   // Initial Load & Migration
   useEffect(() => {
@@ -80,7 +165,7 @@ export const useAbacusGame = () => {
           return defaultVal;
         };
 
-        const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior' | 'english' | 'coding');
+        const savedPath = getOrMigrate('abacus_learning_path', 'junior', (v) => v as 'junior' | 'senior' | 'coding');
         setLearningPath(savedPath);
 
         const savedProgress = getOrMigrate(STORAGE_KEYS.PROGRESS, null);
@@ -103,6 +188,7 @@ export const useAbacusGame = () => {
         setDailyLogs(getOrMigrate(STORAGE_KEYS.DAILY_LOGS, []));
         setGlobalCoins(getOrMigrate(STORAGE_KEYS.COINS, 0, parseInt));
         setGlobalStreak(getOrMigrate(STORAGE_KEYS.STREAK, 0, parseInt));
+        setPersonalBest(getOrMigrate(STORAGE_KEYS.PERSONAL_BEST, 0, parseInt));
 
       } catch (err) {
         console.error("Failed to load data from DB", err);
@@ -184,10 +270,6 @@ export const useAbacusGame = () => {
   };
 
   const explainQuestion = (prob: Problem) => {
-    if (prob.type === 'english') {
-       speak(prob.expression);
-       return;
-    }
     const text = prob.expression
       .replace('×', 'times')
       .replace('÷', 'divided by')
@@ -230,11 +312,13 @@ export const useAbacusGame = () => {
       localStorage.removeItem(STORAGE_KEYS.STREAK);
       localStorage.removeItem(STORAGE_KEYS.DAILY_LOGS);
       localStorage.removeItem(STORAGE_KEYS.LEARNING_PATH);
+      localStorage.removeItem(STORAGE_KEYS.PERSONAL_BEST);
       
       setProgress(getDefaultProgress());
       setDailyLogs([]);
       setGlobalCoins(0);
       setGlobalStreak(0);
+      setPersonalBest(0);
       setMasterSeed(0);
       setMode('map');
       setPracticeType('visual');
@@ -248,8 +332,8 @@ export const useAbacusGame = () => {
   const checkAnswer = () => {
     if (!problem) return;
     let isCorrect = false;
-    if (problem.type === 'english') {
-       isCorrect = userAnswer.trim().toLowerCase() === String(problem.answer).trim().toLowerCase();
+    if (problem.type === 'coding') {
+      isCorrect = userAnswer.trim().toLowerCase() === String(problem.answer).trim().toLowerCase();
     } else {
        const val = parseFloat(userAnswer);
        isCorrect = Math.abs(val - Number(problem.answer)) < 0.0001;
@@ -293,7 +377,11 @@ export const useAbacusGame = () => {
             : p
         ));
       }
-      setGlobalStreak(s => s + 1);
+      setGlobalStreak(s => {
+        const next = s + 1;
+        setPersonalBest(pb => (next > pb ? next : pb));
+        return next;
+      });
       setTimeout(() => setShowCelebration(false), 2000);
     } else {
       setFeedback('incorrect');
@@ -334,10 +422,15 @@ export const useAbacusGame = () => {
       dailyLogs,
       currentLevel,
       levelProgress,
-      darkMode
+      darkMode,
+      classReminders,
+      focusMode,
+      personalBest
     },
     actions: {
       setDarkMode,
+      setClassReminders,
+      setFocusMode,
       setLearningPath,
       setCurrentLevelId,
       setMode,

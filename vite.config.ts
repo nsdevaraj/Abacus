@@ -17,7 +17,10 @@ export default defineConfig(({ mode }) => {
           'Cross-Origin-Embedder-Policy': 'credentialless',
         } : {},
       },
-      plugins: [tailwindcss(), react()],
+      plugins: [
+        tailwindcss(),
+        react(),
+      ],
       optimizeDeps: {
         exclude: ['@sqlite.org/sqlite-wasm'],
       },

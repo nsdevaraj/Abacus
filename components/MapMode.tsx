@@ -37,7 +37,7 @@ const MapMode: React.FC<MapModeProps> = ({
                     <Brain className="w-3 h-3" /> Mental Mode
                 </span>
             )}
-            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 font-medium">Collect stars to become a Hero</p>
+            <p className="text-base md:text-lg text-slate-700 dark:text-slate-200 font-medium">Collect stars to become a Hero</p>
          </div>
       </div>
 
@@ -49,8 +49,8 @@ const MapMode: React.FC<MapModeProps> = ({
                 {practiceType === 'mental' ? <Brain className="w-6 h-6 md:w-7 md:h-7 text-white" /> : <Star className="w-6 h-6 md:w-7 md:h-7 fill-white" />}
               </div>
               <div>
-                <h4 className="font-bold text-lg md:text-2xl text-slate-900 dark:text-white leading-tight mb-0.5">{stage.name}</h4>
-                <p className="text-slate-500 dark:text-slate-400 font-medium text-xs md:text-sm">{stage.description}</p>
+                <h4 className="font-bold text-lg md:text-2xl text-slate-900 dark:text-white leading-tight mb-1">{stage.name}</h4>
+                <p className="text-slate-700 dark:text-slate-300 font-medium text-sm md:text-base leading-snug">{stage.description}</p>
               </div>
             </div>
 
